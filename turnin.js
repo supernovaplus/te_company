@@ -1,10 +1,19 @@
+let nameClicked = ()=>{};
+
 (async ()=>{
     const data = await fetch("data.php").then(res=>res.json());
+
     const employee_names = document.getElementById("employee_names");
-    const info_table = document.getElementById("info_table");
+
+    if(!data || !employee_names){
+        return console.log("no data");
+    }
+    
+    const infobox = document.getElementById("infobox");
     const inputFields = document.getElementById("inputFields");
     const calculate = document.getElementById("calculate");
     const final = document.getElementById("final");
+    const response = document.getElementById("response");
 
     const filtered_auto_ranks = Object.values(data.ranks.filter(r=>r["auto_vouchers"] === "1"))
         .map(r=>({
@@ -38,19 +47,14 @@
     }
 
 
-    info_table.innerHTML = "Select employee";
+    infobox.innerHTML = "Select employee";
 
-    employee_names.addEventListener("click",(e)=>{
-        if(e.target.localName !== "option" || e.target.value === "-1") return;
-
-        nameClicked(e.target.value);
-    });
-
-    function nameClicked(id){
+    nameClicked = (id) => {
+        if(id === "-1") return;
         const found = data.employees.find(el=>el.id === id);
         if(!found) return;
         selected_employee = found;
-        info_table.innerHTML = "<table>"+Object.entries(found).map(el => `<tr><th>${el[0]}</th><td>${el[1]}</td></tr>`).join("")+"</table>";
+        infobox.innerHTML = "<table>"+Object.entries(found).map(el => `<tr><th>${el[0]}</th><td>${el[1]}</td></tr>`).join("")+"</table>";
     }
 
     for (let i = data.vouchers.length - 1; i >= 0; i--) {
@@ -75,112 +79,163 @@
         }
 
         let current_total_vouchers = parseInt(selected_employee["vouchers"]);
-        const nextRank = getNextRank(parseInt(selected_employee["vouchers"]));
+        // const nextRank = getNextRank(parseInt(selected_employee["vouchers"]));
 
-        if(selected_employee["auto_rank"] === "0" || nextRank.id === "-1"){
-            finalTurnin();
-        }else{
+        // if(selected_employee["auto_rank"] === "0" || nextRank.id === "-1"){
+        //     finalTurnin();
+        // }else{
 
-            let vouchers_from_input = 0;
-            
-            for (const key in inputsList) {
-                const val = inputsList[key].input.value;
-                if(val && val > 0){
-                    inputsList[key].leftovers = parseInt(inputsList[key].input.value);
-                    vouchers_from_input += parseInt(inputsList[key].input.value);
-                }
-
-            };
-
-            if(vouchers_from_input === 0){
-                final.innerHTML = `Input error`;
-                return;
+        let vouchers_from_input = 0;
+        
+        for (const key in inputsList) {
+            const val = inputsList[key].input.value;
+            if(val && val > 0){
+                inputsList[key].leftovers = parseInt(inputsList[key].input.value);
+                vouchers_from_input += parseInt(inputsList[key].input.value);
             }
 
-            loop();
+        };
 
-            function loop(){
-                const filtered = Object.values(inputsList).filter(el=>el.leftovers > 0);
+        if(vouchers_from_input === 0){
+            final.innerHTML = `Input error`;
+            return;
+        }
 
-                if(filtered.length > 0){
+        const post = [];
+        const accepted_by_id = 5;
+        loop();
 
-                    const currentRank = getCurrentRank(current_total_vouchers);
-                    const newNextRank = getNextRank(current_total_vouchers);
+        function loop(){
+            const filtered = Object.values(inputsList).filter(el=>el.leftovers > 0);
 
-                    //if more than needed
-                    if(newNextRank.id !== "-1" && 
-                        (current_total_vouchers + filtered[0].leftovers) - newNextRank.vouchers_needed > newNextRank.vouchers_needed){
+            if(filtered.length > 0){
 
-                        final.innerHTML += `${newNextRank.vouchers_needed} as ${filtered[0].voucher.name} - RANK: ${currentRank.name} <br>(RANKUP)<hr>`;
-                        current_total_vouchers += newNextRank.vouchers_needed;
-                        filtered[0].leftovers -= newNextRank.vouchers_needed;
+                const currentRank = selected_employee["auto_rank"] === "0" ? 
+                    data.ranks.find(rank => rank.id === selected_employee["custom_rank"]) : 
+                    getCurrentRank(current_total_vouchers);
 
-                    //if less than needed
-                    }else{
-                        console.log("final")
-                        final.innerHTML += `${filtered[0].leftovers} as ${filtered[0].voucher.name} - RANK: ${currentRank.name}<br>`;
+                const newNextRank = selected_employee["auto_rank"] === "0" ? 
+                    { id:"-1", name: "N/A" } : 
+                    getNextRank(current_total_vouchers);
 
-                        current_total_vouchers += filtered[0].leftovers;
-                        filtered[0].leftovers = 0;
-                    }
+                //if more than needed
+                if(newNextRank.id !== "-1" && 
+                    (current_total_vouchers + filtered[0].leftovers) - newNextRank.vouchers_needed > newNextRank.vouchers_needed){
 
-                    loop();
+                    const totalmoney = newNextRank.vouchers_needed * parseInt(filtered[0].voucher.price);
+                    post.push({
+                        amount: parseInt(newNextRank.vouchers_needed),
+                        accepted_by_id,
+                        employeeid: parseInt(selected_employee.id),
+                        rankid: parseInt(currentRank.id),
+                        voucherid: parseInt(filtered[0].voucher.id),
+                        totalmoney,
+                        employeecut: Math.round(totalmoney * (currentRank["employee_cut"] * 0.01)),
 
+                        misc: {
+                            voucher_name: filtered[0].voucher.name,
+                            rank_name: currentRank.name
+                        }
+                    });
+
+                    current_total_vouchers += newNextRank.vouchers_needed;
+                    filtered[0].leftovers -= newNextRank.vouchers_needed;
+
+                //if less than needed
                 }else{
-                    final.innerHTML += `<hr>current_total_vouchers => ${current_total_vouchers}<br>`;
 
-                    const acceptButton = document.createElement("input");
-                    acceptButton.type = "button";
-                    acceptButton.value = "Accept";
-                    final.appendChild(acceptButton);
+                    const totalmoney = filtered[0].leftovers * parseInt(filtered[0].voucher.price);
+                    post.push({
+                        amount: parseInt(filtered[0].leftovers),
+                        accepted_by_id,
+                        employeeid: parseInt(selected_employee.id),
+                        rankid: parseInt(currentRank.id),
+                        voucherid: parseInt(filtered[0].voucher.id),
+                        totalmoney,
+                        employeecut: Math.round(totalmoney * (currentRank["employee_cut"] * 0.01)),
 
-                    
-                    acceptButton.addEventListener("click",(e)=>{
-                        updateEmployeeSelectList();
-                        info_table.innerHTML = "Select employee";
-                        selected_employee = {};
+                        misc: {
+                            voucher_name: filtered[0].voucher.name,
+                            rank_name: currentRank.name
+                        }
+                    });
 
-                        console.log("clicked")
-
-                        fetch("secured.php",{
-                            method: 'GET',
-                            credentials: 'include'
-                          }).then(res=>res.text()).then(res=>{
-                            console.log(res);
-                        })
-                    })
-
+                    current_total_vouchers += filtered[0].leftovers;
+                    filtered[0].leftovers = 0;
                 }
 
+                loop();
+
+            }else{
+                
+                const table = document.createElement("table");
+                final.appendChild(table);
+                table.innerHTML += `<tr><th>#</th><th>Amount</th><th>Type</th><th>Rank</th><th>Employee Cut</th></tr>`;
+
+                table.innerHTML += post.map((v,i)=>{
+                    const string = `<tr><td>#${i+1}</td><td>${v.amount}</td><td>${v.misc.voucher_name}</td><td>${v.misc.rank_name}</td><td>$${Number(v.employeecut).toLocaleString("us")}</td></tr>`;
+                    delete(v.misc);
+                    return string;
+                }).join("");
+
+
+                final.innerHTML += `<hr>current_total_vouchers => ${current_total_vouchers}<br>`;
+
+                const acceptButton = document.createElement("input");
+                acceptButton.type = "button";
+                acceptButton.value = "Accept";
+                final.appendChild(acceptButton);
+
+                
+                acceptButton.addEventListener("click",(e)=>{
+                    // updateEmployeeSelectList();
+                    // infobox.innerHTML = "Select employee";
+
+                    employee_names.style.disabled = "true";
+                    // console.log("clicked")
+
+                    // acceptButton.disabled = true;
+
+                    fetch("turnin_api.php",{
+                        method: 'POST',
+                        credentials: 'include',
+                        body: JSON.stringify(post)
+                        }).then(res=>res.text()).then(res=>{
+                            response.innerHTML = res;
+                    })
+                })
+
             }
+
+        }
 
             
 
-        }
+        // }
 
 
 
-        function finalTurnin(){
-            const foundRank = data.ranks.find(rank => rank.id === selected_employee["custom_rank"]);
-            if(foundRank && foundRank["employee_cut"]){
-                // console.log(inputsList);
-                let turnin_vouchers_sum = 0;
-                let turnin_vouchers = 0;
+        // function finalTurnin(){
+        //     const foundRank = data.ranks.find(rank => rank.id === selected_employee["custom_rank"]);
+        //     if(foundRank && foundRank["employee_cut"]){
+        //         // console.log(inputsList);
+        //         let turnin_vouchers_sum = 0;
+        //         let turnin_vouchers = 0;
 
-                for (const rankId in inputsList) {
-                    turnin_vouchers_sum += +inputsList[rankId].input.value *  +inputsList[rankId].voucher.price;
-                    turnin_vouchers += +inputsList[rankId].input.value;
-                }
+        //         for (const rankId in inputsList) {
+        //             turnin_vouchers_sum += +inputsList[rankId].input.value *  +inputsList[rankId].voucher.price;
+        //             turnin_vouchers += +inputsList[rankId].input.value;
+        //         }
 
-                final.innerHTML = `
-                total_vouchers_sum: ${turnin_vouchers_sum}<br>
-                employee_cut: ${(parseInt(foundRank["employee_cut"]) * 0.01) * turnin_vouchers_sum}<br>
-                company_cut: ${(1 - (parseInt(foundRank["employee_cut"]) * 0.01)).toFixed(2) * turnin_vouchers_sum}
-                `;
-            }else{
-                final.innerHTML = "err 32";
-            }
-        }
+        //         final.innerHTML = `
+        //         total_vouchers_sum: ${turnin_vouchers_sum}<br>
+        //         employee_cut: ${(parseInt(foundRank["employee_cut"]) * 0.01) * turnin_vouchers_sum}<br>
+        //         company_cut: ${(1 - (parseInt(foundRank["employee_cut"]) * 0.01)).toFixed(2) * turnin_vouchers_sum}
+        //         `;
+        //     }else{
+        //         final.innerHTML = "err 32";
+        //     }
+        // }
         
 
         function getCurrentRank(vouchers){
@@ -196,7 +251,7 @@
         function getNextRank(vouchers){
             const lastRank = filtered_auto_ranks.find(el=>el["vouchers_required"] > vouchers);
             return lastRank === undefined ? {
-                id:"-1", name: "N/A x"
+                id:"-1", name: "N/A"
             } : {
                 ...lastRank, 
                 vouchers_needed: lastRank["vouchers_required"] - vouchers,

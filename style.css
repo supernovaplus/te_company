@@ -49,12 +49,38 @@ hr{
     width: 50%;
 }
 
-#info_table{
+#infobox{
     min-height: 300px;
 }
 
-#info_table table{
+table{
     width: 100%;
+    text-align: center;
+}
+
+
+#final table th{
+    background-color: rgb(75, 75, 75);
+}
+
+#final table tr{
+    border-bottom: 1px solid grey !important;
+}
+
+.emp th, .emp td{
+    border: 1px solid black;
+}
+
+tr{
+    border: 1px solid rgb(160, 160, 160);
+    border-radius: 5px;
+}
+
+#infobox td, #infobox th{
+    background-color: rgba(158, 147, 147, 0.356);
+    border-radius: 5px;
+    border-radius: 5px;
+    text-align: center;
 }
 
 .box{
@@ -77,17 +103,6 @@ hr{
     text-transform: uppercase;
 }
 
-tr{
-    border: 1px solid rgb(160, 160, 160);
-    border-radius: 5px;
-
-}
-th{
-    border-radius: 5px;
-    background-color: rgba(190, 171, 171, 0.199);
-}
-td{
-    background-color: rgba(158, 147, 147, 0.356);
+selection, selection *{
     text-align: center;
-    border-radius: 5px;
 }

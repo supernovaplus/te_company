@@ -7,20 +7,14 @@ include_once("./utils/links.php");
 
 $user;
 $err;
-$referer = "";
-require_once("./utils/keys.php");
-
-if(isset($_GET['url'])){
-    $referer = $_GET['url'];
-}
+$referer = isset($_GET['url']) ? $_GET['url'] : "";
+require_once("./utils/config.php");
 
 if(isset($_POST["logout"])){
     setcookie("key", "-", time(), "/"); //clear cookie
     header("Location: login_panel.php?url=".$referer);
     exit;
 }
-
-
 
 if(isset($_COOKIE["key"])){
     if(!in_array($_COOKIE["key"], array_keys($passList))){
@@ -44,13 +38,7 @@ if(isset($_COOKIE["key"])){
 
 }
 
-
-
-
 echo "<div id=\"content\">";
-
-print_r($_POST);
-
 
 $url = htmlentities($_SERVER['PHP_SELF'])."?url=$referer";
 
@@ -58,8 +46,7 @@ $url = htmlentities($_SERVER['PHP_SELF'])."?url=$referer";
 if(isset($user)){
     echo "<p>Logged In as ".$user["name"]."</p>";
 
-    echo "<form method=\"post\" action=\"$url\">
-    <input type=\"submit\" name=\"logout\" value=\"Log Out\"><br>";
+    echo "<form method=\"post\" action=\"$url\"><input type=\"submit\" name=\"logout\" value=\"Log Out\">";
 
     
     // print_r($_SERVER);

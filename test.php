@@ -9,7 +9,13 @@ include_once("./utils/links.php");
     (()=>{
         fetch("secured.php",{
             credentials: 'include'
-        }).then(res=>res.json()).then(res=>console.log(res));
+        }).then(res=>res.json()).then(res=>{
+
+            const el = document.createElement("p");
+            el.innerText = JSON.stringify(res);
+            document.body.appendChild(el);
+
+        });
     })();
 
 </script>
