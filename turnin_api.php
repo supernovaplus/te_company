@@ -13,7 +13,6 @@ $response = (object) array(
 );
 
 if(!isset($body)){
-    $response->status = 404;
     $response->error = "body not found";
     die(json_encode($response));
 }
@@ -42,7 +41,7 @@ try {
         $total_calculated_sum = $body[$i]->totalmoney;
 
         if($stmt->execute()){
-            $response->status = 200;
+            $response->status = 201;
             $response->affected_rows++;
             $response->vouchers_added += $amount;
         }else{
@@ -55,6 +54,7 @@ try {
     
 
 } catch(PDOException $e) {
+    $response->status = 500;
     $response->error = $e->getMessage();
 }
 

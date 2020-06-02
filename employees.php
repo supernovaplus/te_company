@@ -35,6 +35,6 @@ if ($result->num_rows > 0) {
 
 $conn->close();
 
-echo '</div><script>123</script>';
+echo '</div><script>0</script>';
 
 include_once("./utils/footer.php");

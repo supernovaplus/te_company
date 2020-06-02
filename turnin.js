@@ -79,12 +79,6 @@ let nameClicked = ()=>{};
         }
 
         let current_total_vouchers = parseInt(selected_employee["vouchers"]);
-        // const nextRank = getNextRank(parseInt(selected_employee["vouchers"]));
-
-        // if(selected_employee["auto_rank"] === "0" || nextRank.id === "-1"){
-        //     finalTurnin();
-        // }else{
-
         let vouchers_from_input = 0;
         
         for (const key in inputsList) {
@@ -183,25 +177,47 @@ let nameClicked = ()=>{};
 
                 const acceptButton = document.createElement("input");
                 acceptButton.type = "button";
-                acceptButton.value = "Accept";
+                acceptButton.value = "Send data to the database";
                 final.appendChild(acceptButton);
 
                 
                 acceptButton.addEventListener("click",(e)=>{
                     // updateEmployeeSelectList();
                     // infobox.innerHTML = "Select employee";
-
-                    employee_names.style.disabled = "true";
-                    // console.log("clicked")
-
-                    // acceptButton.disabled = true;
-
+                    acceptButton.disabled = true;
+                    calculate.disabled = true;
+                    
                     fetch("turnin_api.php",{
                         method: 'POST',
                         credentials: 'include',
                         body: JSON.stringify(post)
-                        }).then(res=>res.text()).then(res=>{
-                            response.innerHTML = res;
+                        }).then(res=>res.json()).then(res=>{
+                            if(res.status && res.status === 201){
+                                response.innerHTML = `Successfuly added vouchers<br>New rows => ${res.affected_rows}<br>`;
+
+                                const refreshButton = document.createElement("input");
+                                refreshButton.type = "button";
+                                refreshButton.value = "Refresh Page";
+                                refreshButton.onclick = ()=>window.location = window.location;
+                                response.appendChild(refreshButton);
+                            }else{
+                                response.innerHTML = "Error while sending to the database #2<br>";
+                                if(res.error){
+                                    response.innerHTML+=res.error;
+                                }
+
+                                setTimeout(() => {
+                                    acceptButton.disabled = false;
+                                }, 1000);
+                                
+                            }
+                    }).catch(err=>{
+                        console.error(err);
+                        response.innerHTML = "Error while sending to the database #3";
+
+                        setTimeout(() => {
+                            acceptButton.disabled = false;
+                        }, 1000);
                     })
                 })
 
@@ -209,34 +225,7 @@ let nameClicked = ()=>{};
 
         }
 
-            
 
-        // }
-
-
-
-        // function finalTurnin(){
-        //     const foundRank = data.ranks.find(rank => rank.id === selected_employee["custom_rank"]);
-        //     if(foundRank && foundRank["employee_cut"]){
-        //         // console.log(inputsList);
-        //         let turnin_vouchers_sum = 0;
-        //         let turnin_vouchers = 0;
-
-        //         for (const rankId in inputsList) {
-        //             turnin_vouchers_sum += +inputsList[rankId].input.value *  +inputsList[rankId].voucher.price;
-        //             turnin_vouchers += +inputsList[rankId].input.value;
-        //         }
-
-        //         final.innerHTML = `
-        //         total_vouchers_sum: ${turnin_vouchers_sum}<br>
-        //         employee_cut: ${(parseInt(foundRank["employee_cut"]) * 0.01) * turnin_vouchers_sum}<br>
-        //         company_cut: ${(1 - (parseInt(foundRank["employee_cut"]) * 0.01)).toFixed(2) * turnin_vouchers_sum}
-        //         `;
-        //     }else{
-        //         final.innerHTML = "err 32";
-        //     }
-        // }
-        
 
         function getCurrentRank(vouchers){
             let lastRank;

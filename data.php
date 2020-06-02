@@ -2,10 +2,11 @@
 include_once("./utils/login_json.php");
 include_once("./utils/conn.php");
 
-
-$employeeData = [];
-$ranksData = [];
-$vouchersData = [];
+$response = (object) array(
+    "employees" => [],
+    "ranks" => [],
+    "vouchers" => []
+);
 
 $query = "CALL showTable();";
 $query .= "select * from ranks_config;";
@@ -15,11 +16,11 @@ if (mysqli_multi_query($conn, $query)) {
     $column = 0;
 
     do {
-        $pointer = &$employeeData;
+        $pointer = &$response->employees;
         if($column == 1){
-            $pointer = &$ranksData;
+            $pointer = &$response->ranks;
         }else if($column == 2){
-            $pointer = &$vouchersData;
+            $pointer = &$response->vouchers;
         }
 
         if ($result = mysqli_store_result($conn)) {
@@ -35,11 +36,7 @@ if (mysqli_multi_query($conn, $query)) {
     } while (mysqli_next_result($conn));
 }
 
-header('Content-Type: application/json');
-echo "{
-\"employees\": ".json_encode($employeeData).",
-\"ranks\": ".json_encode($ranksData).",
-\"vouchers\": ".json_encode($vouchersData)."
-}";
-
 $conn->close();
+
+header('Content-Type: application/json');
+echo json_encode($response);
