@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400&display=swap');
+
+*{
+    font-family: 'Roboto Slab', serif;
+}
+
+body{
+    color: black;
+}
+
+a{
+    padding: 5px;
+}
+
+hr{
+    margin: 5px;
+    border-color: greenyellow;
+}
+
+#links {
+    width: 50%;
+    text-align: center;
+}
+
+#links a{
+    text-decoration: none;
+    color: blue;
+}
+
+#content, #links, #turnin{
+    margin: 0 auto;
+}
+
+#turnin{
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: black 1px 1px 1px;
+
+    min-width: 300px;
+    max-width: 500px;
+}
+
+#content{
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: black 1px 1px 1px;
+    width: 50%;
+}
+
+#info_table{
+    min-height: 300px;
+}
+
+#info_table table{
+    width: 100%;
+}
+
+.box{
+    width: 100%;
+    background-color: grey;
+    margin-top: 5px;
+    /* padding: 15px 0; */
+    border-radius: 2px;
+    color:white;
+    box-shadow: black 1px 1px;
+    text-shadow: black 1px 1px 1px, 
+                black -1px -1px 1px,
+                black -1px 1px 1px,
+                black 1px -1px 1px;
+    align-content: center;
+    text-align: center;
+}
+
+.upper {
+    text-transform: uppercase;
+}
+
+tr{
+    border: 1px solid rgb(160, 160, 160);
+    border-radius: 5px;
+
+}
+th{
+    border-radius: 5px;
+    background-color: rgba(190, 171, 171, 0.199);
+}
+td{
+    background-color: rgba(158, 147, 147, 0.356);
+    text-align: center;
+    border-radius: 5px;
+}
