@@ -5,7 +5,8 @@ include_once("./utils/conn.php");
 $response = (object) array(
     "employees" => [],
     "ranks" => [],
-    "vouchers" => []
+    "vouchers" => [],
+    "config" => []
 );
 
 $query = "CALL showTable();";

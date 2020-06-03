@@ -59,6 +59,7 @@ let nameClicked = ()=>{};
 
     for (let i = data.vouchers.length - 1; i >= 0; i--) {
         const v = data.vouchers[i];
+        if(v.disabled === "1") continue;
         const newField = document.createElement("div");
         newField.innerHTML = `${v.name} | ${v.price}$<br>`;
         const input = document.createElement("input");
