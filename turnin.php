@@ -1,5 +1,5 @@
 <?php
-require_once("./utils/login.php");
+require_once("./utils/check_login.php");
 
 include_once("./utils/header.php");
 include_once("./utils/links.php");

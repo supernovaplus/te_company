@@ -58,6 +58,10 @@ table{
     text-align: center;
 }
 
+#employees table th{
+    min-width: 30px;;
+}
+
 
 #final table th{
     background-color: rgb(75, 75, 75);
@@ -105,4 +109,10 @@ tr{
 
 selection, selection *{
     text-align: center;
+}
+
+
+p{
+    margin: 5px;
+    padding: 5px;
 }

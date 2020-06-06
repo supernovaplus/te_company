@@ -1,5 +1,5 @@
 <?php
-include_once("./utils/login_json.php");
+include_once("./utils/check_login_json.php");
 include_once("./utils/conn.php");
 
 $response = (object) array(
@@ -39,5 +39,4 @@ if (mysqli_multi_query($conn, $query)) {
 
 $conn->close();
 
-header('Content-Type: application/json');
 echo json_encode($response);

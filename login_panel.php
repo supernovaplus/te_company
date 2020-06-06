@@ -32,7 +32,14 @@ if(isset($_COOKIE["key"])){
     }else if(!in_array($_POST['key'], array_keys($passList))){
         $err = "Incorrect key, try again...";
     }else{
-        setcookie("key", $_POST['key'], time() + (86400 * 30), "/"); // 86400 = 1 day
+        setcookie("key", $_POST['key'], [
+            'expires' => time() + (86400 * 30),// 86400 = 1 day
+            'path' => '/',
+            // 'domain' => 'domain.com',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Strict',
+        ]);
         $user = $passList[$_POST['key']];
     }
 
@@ -66,5 +73,7 @@ if(isset($user)){
 
 
 echo "</div>";
+
+echo "<script>0</script>";
 
 include_once("./utils/footer.php");
