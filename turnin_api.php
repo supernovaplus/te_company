@@ -1,7 +1,7 @@
 <?php
 require_once("./utils/check_login_json.php");
 $entityBody = file_get_contents('php://input');
-include_once("./utils/conn.php");
+require_once("./utils/conn_json.php");
 
 $body = json_decode($entityBody);
 
@@ -12,8 +12,15 @@ $response = (object) array(
     'vouchers_added' => 0
 );
 
+if ($conn -> connect_errno) {
+    $response->error = "Database Error";
+    $conn->close();
+    die(json_encode($response));
+}
+
 if(!isset($body)){
     $response->error = "body not found";
+    $conn->close();
     die(json_encode($response));
 }
 

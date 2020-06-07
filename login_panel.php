@@ -1,12 +1,8 @@
 <?php
-// define("isLoginPage", "true");
-// require_once("./utils/login.php");
+require_once("./utils/header.php");
+require_once("./utils/links.php");
 
-include_once("./utils/header.php");
-include_once("./utils/links.php");
-
-$user;
-$err;
+$user; $err;
 $referer = isset($_GET['url']) ? $_GET['url'] : "";
 require_once("./utils/config.php");
 
@@ -36,8 +32,8 @@ if(isset($_COOKIE["key"])){
             'expires' => time() + (86400 * 30),// 86400 = 1 day
             'path' => '/',
             // 'domain' => 'domain.com',
-            'secure' => true,
-            'httponly' => true,
+            // 'secure' => true,
+            // 'httponly' => true,
             'samesite' => 'Strict',
         ]);
         $user = $passList[$_POST['key']];
@@ -51,7 +47,7 @@ $url = htmlentities($_SERVER['PHP_SELF'])."?url=$referer";
 
 
 if(isset($user)){
-    echo "<p>Logged In as ".$user["name"]."</p>";
+    echo "<p>Logged In as ".$user["name"]." (".$user["permission_name"].")</p>";
 
     echo "<form method=\"post\" action=\"$url\"><input type=\"submit\" name=\"logout\" value=\"Log Out\">";
 
@@ -76,4 +72,4 @@ echo "</div>";
 
 echo "<script>0</script>";
 
-include_once("./utils/footer.php");
+require_once("./utils/footer.php");

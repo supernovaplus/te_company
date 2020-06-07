@@ -1,118 +1,107 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400&display=swap');
+@import "https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400&display=swap";
 
-*{
-    font-family: 'Roboto Slab', serif;
+* {
+    font-family:'Roboto Slab',serif
 }
 
-body{
-    color: black;
+body {
+    color:#000
 }
 
-a{
-    padding: 5px;
+a {
+    padding:5px
 }
 
-hr{
-    margin: 5px;
-    border-color: greenyellow;
+hr {
+    margin:5px;
+    border-color:#adff2f
 }
 
 #links {
-    width: 50%;
-    text-align: center;
+    width:50%;
+    text-align:center
 }
 
-#links a{
-    text-decoration: none;
-    color: blue;
+#links a {
+    text-decoration:none;
+    color:blue
 }
 
-#content, #links, #turnin{
-    margin: 0 auto;
+#content,#links,#turnin {
+    margin:0 auto
 }
 
-#turnin{
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 10px;
-    box-shadow: black 1px 1px 1px;
-
-    min-width: 300px;
-    max-width: 500px;
+#turnin {
+    border:1px solid #000;
+    border-radius:5px;
+    padding:10px;
+    box-shadow:#000 1px 1px 1px;
+    min-width:300px;
+    max-width:500px
 }
 
-#content{
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 10px;
-    box-shadow: black 1px 1px 1px;
-    width: 50%;
+#content {
+    border:1px solid #000;
+    border-radius:5px;
+    padding:10px;
+    box-shadow:#000 1px 1px 1px;
+    width:50%
 }
 
-#infobox{
-    min-height: 300px;
+#infobox {
+    min-height:300px
 }
 
-table{
-    width: 100%;
-    text-align: center;
+table {
+    width:100%;
+    text-align:center
 }
 
-#employees table th{
-    min-width: 30px;;
+#employees table th {
+    min-width:30px
 }
 
-
-#final table th{
-    background-color: rgb(75, 75, 75);
+#final table th {
+    background-color:#4b4b4b
 }
 
-#final table tr{
-    border-bottom: 1px solid grey !important;
+#final table tr {
+    border-bottom:1px solid grey!important
 }
 
-.emp th, .emp td{
-    border: 1px solid black;
+.emp th,.emp td {
+    border:1px solid #000
 }
 
-tr{
-    border: 1px solid rgb(160, 160, 160);
-    border-radius: 5px;
+tr {
+    border:1px solid #a0a0a0;
+    border-radius:5px
 }
 
-#infobox td, #infobox th{
-    background-color: rgba(158, 147, 147, 0.356);
-    border-radius: 5px;
-    border-radius: 5px;
-    text-align: center;
+#infobox td,#infobox th {
+    background-color:rgba(158,147,147,0.356);
+    border-radius:5px;
+    border-radius:5px;
+    text-align:center
 }
 
-.box{
-    width: 100%;
-    background-color: grey;
-    margin-top: 5px;
-    /* padding: 15px 0; */
-    border-radius: 2px;
-    color:white;
-    box-shadow: black 1px 1px;
-    text-shadow: black 1px 1px 1px, 
-                black -1px -1px 1px,
-                black -1px 1px 1px,
-                black 1px -1px 1px;
-    align-content: center;
-    text-align: center;
+.box {
+    width:100%;
+    background-color:grey;
+    margin-top:5px;
+    border-radius:2px;
+    color:#fff;
+    box-shadow:#000 1px 1px;
+    text-shadow:#000 1px 1px 1px,#000 -1px -1px 1px,#000 -1px 1px 1px,#000 1px -1px 1px;
+    align-content:center;
+    text-align:center
 }
 
 .upper {
-    text-transform: uppercase;
+    text-transform:uppercase
 }
 
-selection, selection *{
-    text-align: center;
-}
-
-
-p{
-    margin: 5px;
-    padding: 5px;
+p {
+    margin:5px;
+    padding:5px
 }

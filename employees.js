@@ -8,7 +8,9 @@ function fetchData(callback){
     fetch("data.php")
     .then(res=>res.json())
     .then(res=>{
-        if(res.employees.length > 0){
+        if(res.error !== null){
+            return employeediv.innerHTML = res.error;
+        }else if(res.employees.length > 0){
             data = res;
             if(callback === undefined){
                 displayAllEmployees()
@@ -37,50 +39,45 @@ function displayAllEmployees(){
     }
 }
 
-const updateTable = [
-    {name: "id", edit: false},
-    {name: "name", edit: true, type: "text"},
-    {name: "ingameid", edit: true, type: "number"},
-    {name: "join_date", edit: true, type: "text"},
-    {name: "leave_date", edit: false},
-    {name: "note", edit: true, type: "text"},
-    {name: "auto_rank", edit: true, type: "bool"},
-    {name: "custom_rank", edit: true, type: "customrank"},
-    {name: "discordid", edit: true, type: "number"},
-    {name: "vouchers", edit: false},
-    {name: "rank", edit: false},
-]
 
 function editEmployee(id){
+    const column_names = Object.keys(data.employees[0]);
     const found = data.employees.find(el=>el.id == id);
     if(!found) return;
     employeediv.innerHTML = "";
 
     const table = document.createElement("table");
-    for (let i = 0; i < updateTable.length; i++) {
-        const k = updateTable[i];
+    for (let i = 0; i < column_names.length; i++) {
+        const colname = column_names[i];
         let string = "";
         
-        string += `<tr><th>${k.name}</th><td>`;
-        if(k.edit === false){
-            string += found[k.name];
+        string += `<tr><th>${colname}</th><td>`;
+        if(data.user.permissions[colname] === undefined || data.user.permissions[colname] === false){
+            string += found[colname];
         }else{
             string += `<input type="checkbox" onclick="this.nextElementSibling.disabled = !this.nextElementSibling.disabled"></input>`;
-            switch(k.type){
-                case("number"):
-                case("text"):
-                    string += `<input type="${k.type}" name="${k.name}" value="${found[k.name]}" disabled></input>`;
+
+            switch(colname){
+                case("ingameid"):
+                case("discordid"):
+                    string += `<input type="number" name="${colname}" value="${found[colname]}" disabled></input>`;
                     break;
 
-                case("customrank"):
-                    string += generateCustomRank(found[k.custom_rank])
+                case("custom_rank"):
+                    string += generateCustomRank(found.rankid)
                     break;
 
-                case("bool"):
-                    string += generateTrueFalseField(found[k.auto_rank])
+                case("auto_rank"):
+                    string += generateTrueFalseField(found.auto_rank,"isAutoRank",["Automatic Vouchers","Custom Vouchers"])
+                    break;
+
+                case("leave_date"):
+                    string += `<input type="text" name="${colname}" value="${found[colname]}" disabled></input><br>
+                    Today is: ${new Date().toLocaleString('lt', { timeZone: 'GMT' })}`;
                     break;
 
                 default:
+                    string += `<input type="text" name="${colname}" value="${found[colname]}" disabled></input>`;
                     break;
             }
         }
@@ -115,10 +112,10 @@ function generateCustomRank(currentRankId){
     </select>`;
 }
 
-function generateTrueFalseField(bool,name="customBool"){
+function generateTrueFalseField(bool,name="customBool",options = ["True","False"]){
     return `
     <select id="${name}" disabled>
-        <option value="1" ${bool === true ? "selected" : ""}>1 - True (default)</option>
-        <option value="0" ${bool === false ? "selected" : ""}>0 - False</option>
+        <option value="1" ${bool === "1" ? "selected" : ""}>1 - ${options[0]} (default)</option>
+        <option value="0" ${bool === "0" ? "selected" : ""}>0 - ${options[1]}</option>
     </select>`;
 }

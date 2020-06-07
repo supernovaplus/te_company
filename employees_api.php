@@ -2,7 +2,7 @@
 require_once("./utils/check_login_json.php");
 // $entityBody = file_get_contents('php://input');
 // $body = json_decode($entityBody);
-include_once("./utils/conn.php");
+include_once("./utils/conn_json.php");
 
 
 $response = (object) array(
@@ -10,6 +10,7 @@ $response = (object) array(
     'error' => null,
     "employees" => [],
 );
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 

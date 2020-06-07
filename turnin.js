@@ -4,16 +4,25 @@ let nameClicked = ()=>{};
     const data = await fetch("data.php").then(res=>res.json());
 
     const employee_names = document.getElementById("employee_names");
-
-    if(!data || !employee_names){
-        return console.log("no data");
-    }
-    
     const infobox = document.getElementById("infobox");
     const inputFields = document.getElementById("inputFields");
     const calculate = document.getElementById("calculate");
     const final = document.getElementById("final");
     const response = document.getElementById("response");
+
+
+    if(!data || !employee_names){
+        return infobox.innerHTML = "no data";
+    }else if(data.error !== null){
+        calculate.hidden = true;
+        employee_names.parentElement.hidden = true;
+        return infobox.innerHTML = data.error + "<br> Try again later";
+    };
+
+    
+
+
+
 
     const filtered_auto_ranks = Object.values(data.ranks.filter(r=>r["auto_vouchers"] === "1"))
         .map(r=>({
@@ -21,6 +30,7 @@ let nameClicked = ()=>{};
             vouchers_required: +r.vouchers_required,
             employee_cut: +r.employee_cut,
         })).sort((a,b) => a.vouchers_required - b.vouchers_required)
+        
     let selected_employee = {};
     const inputsList = {};
 

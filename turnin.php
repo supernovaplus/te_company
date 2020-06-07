@@ -1,8 +1,7 @@
 <?php
 require_once("./utils/check_login.php");
-
-include_once("./utils/header.php");
-include_once("./utils/links.php");
+require_once("./utils/header.php");
+require_once("./utils/links.php");
 ?>
 
 <div id="turnin">
@@ -22,4 +21,4 @@ include_once("./utils/links.php");
 <script src="./turnin.js"></script>
 
 <?php
-include_once("./utils/footer.php");
+require_once("./utils/footer.php");

@@ -7,12 +7,10 @@ $pages = [
     "login_panel.php",
     "test.php"
 ];
-echo "
-    <div id=\"links\">";
+echo "<div id=\"links\">";
 foreach ($pages as $key => $value) {
 echo "
         <a href='".$value."'>".$value."</a>";
 }
 
-echo "
-    </div>";
+echo "</div>";
