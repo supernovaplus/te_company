@@ -4,7 +4,6 @@ require_once("./utils/check_login_json.php");
 // $body = json_decode($entityBody);
 include_once("./utils/conn_json.php");
 
-
 $response = (object) array(
     'status' => 400, 
     'error' => null,
