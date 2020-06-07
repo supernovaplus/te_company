@@ -1,5 +1,4 @@
-const employeediv = document.getElementById("content");
-
+const div = document.getElementById("content");
 var data = [];
 
 fetchData();
@@ -9,41 +8,185 @@ function fetchData(callback){
     .then(res=>res.json())
     .then(res=>{
         if(res.error !== null){
-            return employeediv.innerHTML = res.error;
+            div.innerHTML = res.error;
+            return;
         }else if(res.employees.length > 0){
             data = res;
             if(callback === undefined){
-                displayAllEmployees()
+                windowAllEmployees()
             }else{
                 callback();
             }
-        }else{employeediv.innerHTML = "error 2";};
-    }).catch(err=>{employeediv.innerHTML = "error 1";console.log(err);});
+        }else{
+            div.innerHTML = "error 2";
+        };
+    }).catch(err=>{
+        div.innerHTML = "error 1";
+        console.log(err);
+    });
 }
 
 
-
-
-function displayAllEmployees(){
-    employeediv.innerHTML = "";
+function windowAllEmployees(){
+    div.innerHTML = "";
     const table = document.createElement("table");
-    employeediv.appendChild(table);
+    div.appendChild(table);
 
-    const keys = Object.keys(data.employees[0]);
+    const filter = ["leave_date"];
+    const keys = Object.keys(data.employees[0]).filter(k => !filter.includes(k) );
 
-    table.innerHTML += `<tr>${keys.map(k=>`<th>${k}</th>`).join("")}<th>action</th></tr>`;
+    table.appendChild(cel(["tr",   ...keys.map(k => ["th", {innerText: k}]), ["th", {innerText: "action"}]]));
 
     for (let i = 0; i < data.employees.length; i++) {
-        table.innerHTML += `<tr>${keys.map(k=>`<td>${data.employees[i][k]}</td>`).join("")}<td><input type="button" value="edit" onclick="editEmployee(${data.employees[i]["id"]})"></d></tr>`;
+        table.appendChild(cel(["tr",   ...keys.map(k => ["td", {innerText: data.employees[i][k]}]), ["td",["input", {type: "button", value: "edit", onclick: ()=>{
+            windowEditEmployee(data.employees[i]["id"])
+        }}]]]));
+    }
+
+    if(data.user.permission_name === "ceo" || data.user.permission_name === "hr"){
+        div.appendChild(cel(["input",{type:"button", value: "add new employee", onclick: windowAddNewEmployee}]));
     }
 }
 
 
-function editEmployee(id){
+function windowAddNewEmployee(){
+    div.innerHTML = "";
+    const filter = ["id","vouchers","rank","leave_date"];
     const column_names = Object.keys(data.employees[0]);
+
+    const form = document.createElement("form");
+    form.autocomplete = "off";
+    div.appendChild(form);
+    const table = document.createElement("table");
+    for (let i = 0; i < column_names.length; i++) {
+        const colname = column_names[i];
+        if(filter.includes(colname)) continue;
+        let string = `<tr><th>${colname}</th><td>`;
+
+        switch(colname){
+            case("ingameid"):
+            case("discordid"):
+                string += `<input type="number" name="${colname}" value="" required></input>`;
+                break;
+
+            case("custom_rank"):
+                string += generateCustomRank({
+                    id: 5,
+                    name: "custom_rank",
+                    isDisabled: false,
+                    isRequired: true
+                });
+                break;
+
+            case("auto_rank"):
+                string += generateTrueFalseField({
+                    default: 1,
+                    name: "auto_rank",
+                    options: ["Automatic Rank","Custom Rank"],
+                    isDisabled: false,
+                    isRequired: true
+                });
+                break;
+
+            case("join_date"):
+                string += `<input type="text" name="${colname}" value="${new Date().toLocaleString('lt', { timeZone: 'GMT' })}" required></input><br>`;
+                break;
+
+            case("note"):
+                string += `<input type="text" name="${colname}" value=""></input>`;
+                break;
+
+            default:
+                string += `<input type="text" name="${colname}" value="" required></input>`;
+                break;
+        }
+
+        table.innerHTML += string + "</td></tr>";
+    }
+    form.appendChild(table);
+
+    const responseBox = document.createElement("p");
+    div.appendChild(responseBox);
+
+    const input = [...document.querySelectorAll("input:not([type=button]),select")];
+    const submitButton = document.createElement("input");
+    submitButton.type = "button";
+    submitButton.value = "submit";
+    submitButton.onclick = () => {
+        const errors = [];
+        const body = {};
+        for (let i = 0; i < input.length; i++) {
+            if(!input[i].required){
+                if(input[i].value){
+                    body[input[i].name] = input[i].value;
+                }
+            }else{
+                if(!input[i].value){
+                    errors.push("Missing value on "+input[i].name);
+                }else{
+                    if(input[i].name === "join_date"){
+                        if(!input[i].value.includes("-")){
+                            errors.push("Invalid date on "+input[i].name);
+                        }else{
+                            body[input[i].name] = input[i].value;
+                        }
+
+                    }else if(input[i].name === "ingameid"){
+                        if(data.employees.find(el => el.ingameid == input[i].value)){
+                            errors.push("User already exits on "+input[i].name);
+                        }else{
+                            body[input[i].name] = input[i].value;
+                        }
+
+                    }else{
+                        body[input[i].name] = input[i].value;
+                    }
+                }
+            }
+        }
+
+        if(errors.length > 0){
+            responseBox.innerText = `Errors in input fields: \n${errors.join("\n")}`;
+            return;
+        }
+        
+        console.log(body);
+        // responseBox.innerText = `${JSON.stringify(body)}`;
+        fetch("employees_api.php",{
+            method: 'PUT',
+            credentials: 'include',
+            body: JSON.stringify(body)
+            }).then(res=>res.json()).then(res=>{
+                if(res.status && res.status === 201){
+                    responseBox.innerText = res.response;
+
+                    // submitButton.disabled = true;
+                }else{
+                    if(res.error){
+                        responseBox.innerText = res.error;
+                    }else{
+                        responseBox.innerText = "error";
+                    }
+                }
+        }).catch(err=>{
+            console.error(err);
+            responseBox.innerText = "NO";
+        });
+    };
+    div.appendChild(submitButton);
+    
+    backButton();
+}
+
+
+
+
+function windowEditEmployee(id){
     const found = data.employees.find(el=>el.id == id);
     if(!found) return;
-    employeediv.innerHTML = "";
+
+    div.innerHTML = "";
+    const column_names = Object.keys(data.employees[0]);
 
     const table = document.createElement("table");
     for (let i = 0; i < column_names.length; i++) {
@@ -63,11 +206,22 @@ function editEmployee(id){
                     break;
 
                 case("custom_rank"):
-                    string += generateCustomRank(found.rankid)
+                    string += generateCustomRank({
+                        id: found.rankid,
+                        name: "custom_rank",
+                        isDisabled: true,
+                        isRequired: false
+                    });
                     break;
-
+    
                 case("auto_rank"):
-                    string += generateTrueFalseField(found.auto_rank,"isAutoRank",["Automatic Vouchers","Custom Vouchers"])
+                    string += generateTrueFalseField({
+                        default: found.auto_rank,
+                        name: "auto_rank",
+                        options: ["Automatic Rank","Custom Rank"],
+                        isDisabled: true,
+                        isRequired: false
+                    });
                     break;
 
                 case("leave_date"):
@@ -82,37 +236,31 @@ function editEmployee(id){
         }
         table.innerHTML += string + "</td><tr/>";
     }
-    employeediv.appendChild(table);
+    div.appendChild(table);
 
-    const backButton = document.createElement("input");
-    backButton.type = "button";
-    backButton.value = "back";
-    backButton.onclick = displayAllEmployees;
-    employeediv.appendChild(backButton)
+    backButton();
 
-    const refreshButton = document.createElement("input");
-    refreshButton.type = "button";
-    refreshButton.value = "refresh";
-    refreshButton.onclick = () => fetchData(()=>{
-        editEmployee(id);
-        const p = document.createElement("p");
-        p.innerText = `Refreshed ${new Date().toTimeString()}`;
-        employeediv.appendChild(p);
-    });
-    employeediv.appendChild(refreshButton);
+    div.appendChild(cel(["input", {type: "button", value: "refresh", onclick: () => fetchData(()=>{
+        windowEditEmployee(id);
+        div.appendChild(cel(["p",{innerText: `Refreshed ${new Date().toTimeString()}`}]));
+    })}]));
+}
+
+function backButton(){
+    div.appendChild(cel(["input",{type: "button", value: "back", onclick: windowAllEmployees}]));
 }
 
 
-function generateCustomRank(currentRankId){
-    return `<select id="customRankSelect" disabled>
-    ${data.ranks.map(rank=>`<option value="${rank.id}" ${rank.id == currentRankId ? "selected" : ""}>${rank.id} - ${rank.name}</option>`).join("")}
+function generateCustomRank(obj){
+    return `<select id="customRankSelect" name="${obj.name || "opt"}" ${obj.isDisabled ? "disabled" : ""} ${obj.isRequired ? "required" : ""}>
+    ${data.ranks.map(rank=>`<option value="${rank.id}" ${rank.id == obj.id ? "selected" : ""}>${rank.id} - ${rank.name}</option>`).join("")}
     </select>`;
 }
 
-function generateTrueFalseField(bool,name="customBool",options = ["True","False"]){
+function generateTrueFalseField(obj){
     return `
-    <select id="${name}" disabled>
-        <option value="1" ${bool === "1" ? "selected" : ""}>1 - ${options[0]} (default)</option>
-        <option value="0" ${bool === "0" ? "selected" : ""}>0 - ${options[1]}</option>
+    <select id="${obj.name || "opt"}" name="${obj.name || "opt"}" ${obj.isDisabled ? "disabled" : ""} ${obj.isRequired ? "required" : ""}>
+        <option value="1" ${obj.default === "1" ? "selected" : ""}>1 - ${obj.options[0] || "true"} (default)</option>
+        <option value="0" ${obj.default === "0" ? "selected" : ""}>0 - ${obj.options[1] || "false"}</option>
     </select>`;
 }

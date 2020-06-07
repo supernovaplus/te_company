@@ -53,9 +53,8 @@ function updateEmployeeSelectList(){
     if(data.employees.length > 0){
         employee_names.innerHTML = `<option value="-1">Select employee</option>`;
         
-        employee_names.innerHTML += data.employees.map((el,i)=>{
-
-            return `<option value="${el.id}">NAME: ${el.name} | ID: ${el.id} | VOUCHERS: ${el.vouchers} | RANK: ${el.rank}</option>`
+        employee_names.innerHTML += data.employees.map((em,i)=>{
+            return `<option value="${em.id}">NAME: ${em.name}#${em.ingameid} | EID: ${em.id} | VOUCHERS: ${em.vouchers} | RANK: ${em.rank}</option>`
         }).join("");
     }else{
         employee_names.innerHTML = `<option value="-1">No Employee Found, Try Again Later</option>`;
