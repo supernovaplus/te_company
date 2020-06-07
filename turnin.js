@@ -1,263 +1,247 @@
+const employee_names = document.getElementById("employee_names");
+const infobox = document.getElementById("infobox");
+const inputFields = document.getElementById("inputFields");
+const calculate = document.getElementById("calculate");
+const final = document.getElementById("final");
+const response = document.getElementById("response");
 let nameClicked = ()=>{};
+let data, filtered_auto_ranks;
+let selected_employee = {}, inputsList = {};
 
-(async ()=>{
-    const data = await fetch("data.php").then(res=>res.json());
+fetch("data.php")
+    .then(res=>res.json())
+    .then(res=>{
+        if(!res || res.error !== null){
+            calculate.hidden = true;
+            employee_names.parentElement.hidden = true;
+            infobox.innerHTML = res.error + "<br> Try again later";
+        }else{
+            data = res;
 
-    const employee_names = document.getElementById("employee_names");
-    const infobox = document.getElementById("infobox");
-    const inputFields = document.getElementById("inputFields");
-    const calculate = document.getElementById("calculate");
-    const final = document.getElementById("final");
-    const response = document.getElementById("response");
+            filtered_auto_ranks = Object.values(data.ranks.filter(r=>r["auto_vouchers"] === "1"))
+                .map(r=>({
+                    ...r, 
+                    vouchers_required: +r.vouchers_required,
+                    employee_cut: +r.employee_cut,
+                })).sort((a,b) => a.vouchers_required - b.vouchers_required);
+
+            infobox.innerHTML = "Select employee";
+
+            for (let i = data.vouchers.length - 1; i >= 0; i--) {
+                const v = data.vouchers[i];
+                if(v.disabled === "1") continue;
+                const newField = document.createElement("div");
+                newField.innerHTML = `${v.name} | ${v.price}$<br>`;
+                const input = document.createElement("input");
+                input.type = "number";
+                input.value = 0;
+                newField.appendChild(input);
+                inputsList[v.id] = { input, voucher: v };
+                inputFields.prepend(newField);
+            }
+
+            updateEmployeeSelectList();
+            calculate.addEventListener("click",handleCalculateButton);
+        }
+    }).catch(err=>{
+        console.log(err);
+        infobox.innerHTML = "no data";
+    });
 
 
-    if(!data || !employee_names){
-        return infobox.innerHTML = "no data";
-    }else if(data.error !== null){
-        calculate.hidden = true;
-        employee_names.parentElement.hidden = true;
-        return infobox.innerHTML = data.error + "<br> Try again later";
+function updateEmployeeSelectList(){
+    if(data.employees.length > 0){
+        employee_names.innerHTML = `<option value="-1">Select employee</option>`;
+        
+        employee_names.innerHTML += data.employees.map((el,i)=>{
+
+            return `<option value="${el.id}">NAME: ${el.name} | ID: ${el.id} | VOUCHERS: ${el.vouchers} | RANK: ${el.rank}</option>`
+        }).join("");
+    }else{
+        employee_names.innerHTML = `<option value="-1">No Employee Found, Try Again Later</option>`;
+    }
+}
+
+nameClicked = (id) => {
+    if(id === "-1") return;
+    const found = data.employees.find(el=>el.id === id);
+    if(!found) return;
+    selected_employee = found;
+    infobox.innerHTML = "<table>"+Object.entries(found).map(el => `<tr><th>${el[0]}</th><td>${el[1]}</td></tr>`).join("")+"</table>";
+}
+
+function handleCalculateButton(e){
+    if(Object.keys(selected_employee).length === 0){
+        final.innerHTML = "No employee is selected.";
+        return;
+    }else{
+        final.innerHTML = "";
+    }
+
+    let current_total_vouchers = parseInt(selected_employee["vouchers"]);
+    let vouchers_from_input = 0;
+    
+    for (const key in inputsList) {
+        const val = inputsList[key].input.value;
+        if(val && val > 0){
+            inputsList[key].leftovers = parseInt(inputsList[key].input.value);
+            vouchers_from_input += parseInt(inputsList[key].input.value);
+        }
+
     };
 
-    
-
-
-
-
-    const filtered_auto_ranks = Object.values(data.ranks.filter(r=>r["auto_vouchers"] === "1"))
-        .map(r=>({
-            ...r, 
-            vouchers_required: +r.vouchers_required,
-            employee_cut: +r.employee_cut,
-        })).sort((a,b) => a.vouchers_required - b.vouchers_required)
-        
-    let selected_employee = {};
-    const inputsList = {};
-
-    updateEmployeeSelectList();
-    function updateEmployeeSelectList(){
-        if(data.employees.length > 0){
-            employee_names.innerHTML = `<option value="-1">Select employee</option>`;
-            
-            employee_names.innerHTML += data.employees.map((el,i)=>{
-                
-                // //for debug
-                // if(i === 0){
-                //     setTimeout(() => {
-                //         nameClicked(el.id);
-                //     }, 100);
-                //     return `<option value="${el.id}" selected>NAME: ${el.name} | ID: ${el.id} | VOUCHERS: ${el.vouchers} | RANK: ${el.rank}</option>`
-                // }
-    
-                return `<option value="${el.id}">NAME: ${el.name} | ID: ${el.id} | VOUCHERS: ${el.vouchers} | RANK: ${el.rank}</option>`
-            }).join("");
-        }else{
-            employee_names.innerHTML = `<option value="-1">No Employee Found, Try Again Later</option>`;
-        }
+    if(vouchers_from_input === 0){
+        final.innerHTML = `Input error`;
+        return;
     }
 
+    const post = [];
+    const accepted_by_id = 5;
+    loop();
 
-    infobox.innerHTML = "Select employee";
+    function loop(){
+        const filtered = Object.values(inputsList).filter(el=>el.leftovers > 0);
 
-    nameClicked = (id) => {
-        if(id === "-1") return;
-        const found = data.employees.find(el=>el.id === id);
-        if(!found) return;
-        selected_employee = found;
-        infobox.innerHTML = "<table>"+Object.entries(found).map(el => `<tr><th>${el[0]}</th><td>${el[1]}</td></tr>`).join("")+"</table>";
-    }
+        if(filtered.length > 0){
 
-    for (let i = data.vouchers.length - 1; i >= 0; i--) {
-        const v = data.vouchers[i];
-        if(v.disabled === "1") continue;
-        const newField = document.createElement("div");
-        newField.innerHTML = `${v.name} | ${v.price}$<br>`;
-        const input = document.createElement("input");
-        input.type = "number";
-        input.value = 0;
-        newField.appendChild(input);
-        inputsList[v.id] = { input, voucher: v };
-        inputFields.prepend(newField);
-    }
+            const currentRank = selected_employee["auto_rank"] === "0" ? 
+                data.ranks.find(rank => rank.id === selected_employee["custom_rank"]) : 
+                getCurrentRank(filtered_auto_ranks, current_total_vouchers);
 
-    calculate.addEventListener("click",(e)=>{
+            const newNextRank = selected_employee["auto_rank"] === "0" ? 
+                { id:"-1", name: "N/A" } : 
+                getNextRank(filtered_auto_ranks, current_total_vouchers);
 
-        if(Object.keys(selected_employee).length === 0){
-            final.innerHTML = "No employee is selected.";
-            return;
-        }else{
-            final.innerHTML = "";
-        }
+            //if more than needed
+            if(newNextRank.id !== "-1" && 
+                (current_total_vouchers + filtered[0].leftovers) - newNextRank.vouchers_needed > newNextRank.vouchers_needed){
 
-        let current_total_vouchers = parseInt(selected_employee["vouchers"]);
-        let vouchers_from_input = 0;
-        
-        for (const key in inputsList) {
-            const val = inputsList[key].input.value;
-            if(val && val > 0){
-                inputsList[key].leftovers = parseInt(inputsList[key].input.value);
-                vouchers_from_input += parseInt(inputsList[key].input.value);
+                const totalmoney = newNextRank.vouchers_needed * parseInt(filtered[0].voucher.price);
+                post.push({
+                    amount: parseInt(newNextRank.vouchers_needed),
+                    accepted_by_id,
+                    employeeid: parseInt(selected_employee.id),
+                    rankid: parseInt(currentRank.id),
+                    voucherid: parseInt(filtered[0].voucher.id),
+                    totalmoney,
+                    employeecut: Math.round(totalmoney * (currentRank["employee_cut"] * 0.01)),
+
+                    misc: {
+                        voucher_name: filtered[0].voucher.name,
+                        rank_name: currentRank.name
+                    }
+                });
+
+                current_total_vouchers += newNextRank.vouchers_needed;
+                filtered[0].leftovers -= newNextRank.vouchers_needed;
+
+            //if less than needed
+            }else{
+
+                const totalmoney = filtered[0].leftovers * parseInt(filtered[0].voucher.price);
+                post.push({
+                    amount: parseInt(filtered[0].leftovers),
+                    accepted_by_id,
+                    employeeid: parseInt(selected_employee.id),
+                    rankid: parseInt(currentRank.id),
+                    voucherid: parseInt(filtered[0].voucher.id),
+                    totalmoney,
+                    employeecut: Math.round(totalmoney * (currentRank["employee_cut"] * 0.01)),
+
+                    misc: {
+                        voucher_name: filtered[0].voucher.name,
+                        rank_name: currentRank.name
+                    }
+                });
+
+                current_total_vouchers += filtered[0].leftovers;
+                filtered[0].leftovers = 0;
             }
+
+            loop();
+
+        }else{
+            
+            const table = document.createElement("table");
+            final.appendChild(table);
+            table.innerHTML += `<tr><th>#</th><th>Amount</th><th>Type</th><th>Rank</th><th>Employee Cut</th></tr>`;
+
+            table.innerHTML += post.map((v,i)=>{
+                const string = `<tr><td>#${i+1}</td><td>${v.amount}</td><td>${v.misc.voucher_name}</td><td>${v.misc.rank_name}</td><td>$${Number(v.employeecut).toLocaleString("us")}</td></tr>`;
+                delete(v.misc);
+                return string;
+            }).join("");
+
+
+            final.innerHTML += `<hr>Vouchers after turnin => ${current_total_vouchers}<br>`;
+
+            const acceptButton = document.createElement("input");
+            acceptButton.type = "button";
+            acceptButton.value = "Send data to the database";
+            final.appendChild(acceptButton);
+
+            
+            acceptButton.addEventListener("click",(e)=>{
+                // updateEmployeeSelectList();
+                // infobox.innerHTML = "Select employee";
+                acceptButton.disabled = true;
+                calculate.disabled = true;
+                
+                fetch("turnin_api.php",{
+                    method: 'POST',
+                    credentials: 'include',
+                    body: JSON.stringify(post)
+                    }).then(res=>res.json()).then(res=>{
+                        if(res.status && res.status === 201){
+                            response.innerHTML = `Successfuly added vouchers<br>New rows => ${res.affected_rows}<br>`;
+
+                            const refreshButton = document.createElement("input");
+                            refreshButton.type = "button";
+                            refreshButton.value = "Refresh Page";
+                            refreshButton.onclick = ()=>window.location = window.location;
+                            response.appendChild(refreshButton);
+                        }else{
+                            response.innerHTML = "Error while sending to the database #2<br>";
+                            if(res.error){
+                                response.innerHTML+=res.error;
+                            }
+
+                            setTimeout(() => {
+                                acceptButton.disabled = false;
+                            }, 1000);
+                            
+                        }
+                }).catch(err=>{
+                    console.error(err);
+                    response.innerHTML = "Error while sending to the database #3";
+
+                    setTimeout(() => {
+                        acceptButton.disabled = false;
+                    }, 1000);
+                });
+            });
 
         };
 
-        if(vouchers_from_input === 0){
-            final.innerHTML = `Input error`;
-            return;
+    };
+}
+
+function getCurrentRank(filtered_auto_ranks, vouchers){
+    let lastRank;
+    for (let i = 0; i < filtered_auto_ranks.length; i++) {
+        if(filtered_auto_ranks[i]["vouchers_required"] <= vouchers){
+            lastRank = filtered_auto_ranks[i];
         }
+    }
+    return lastRank;
+};
 
-        const post = [];
-        const accepted_by_id = 5;
-        loop();
-
-        function loop(){
-            const filtered = Object.values(inputsList).filter(el=>el.leftovers > 0);
-
-            if(filtered.length > 0){
-
-                const currentRank = selected_employee["auto_rank"] === "0" ? 
-                    data.ranks.find(rank => rank.id === selected_employee["custom_rank"]) : 
-                    getCurrentRank(current_total_vouchers);
-
-                const newNextRank = selected_employee["auto_rank"] === "0" ? 
-                    { id:"-1", name: "N/A" } : 
-                    getNextRank(current_total_vouchers);
-
-                //if more than needed
-                if(newNextRank.id !== "-1" && 
-                    (current_total_vouchers + filtered[0].leftovers) - newNextRank.vouchers_needed > newNextRank.vouchers_needed){
-
-                    const totalmoney = newNextRank.vouchers_needed * parseInt(filtered[0].voucher.price);
-                    post.push({
-                        amount: parseInt(newNextRank.vouchers_needed),
-                        accepted_by_id,
-                        employeeid: parseInt(selected_employee.id),
-                        rankid: parseInt(currentRank.id),
-                        voucherid: parseInt(filtered[0].voucher.id),
-                        totalmoney,
-                        employeecut: Math.round(totalmoney * (currentRank["employee_cut"] * 0.01)),
-
-                        misc: {
-                            voucher_name: filtered[0].voucher.name,
-                            rank_name: currentRank.name
-                        }
-                    });
-
-                    current_total_vouchers += newNextRank.vouchers_needed;
-                    filtered[0].leftovers -= newNextRank.vouchers_needed;
-
-                //if less than needed
-                }else{
-
-                    const totalmoney = filtered[0].leftovers * parseInt(filtered[0].voucher.price);
-                    post.push({
-                        amount: parseInt(filtered[0].leftovers),
-                        accepted_by_id,
-                        employeeid: parseInt(selected_employee.id),
-                        rankid: parseInt(currentRank.id),
-                        voucherid: parseInt(filtered[0].voucher.id),
-                        totalmoney,
-                        employeecut: Math.round(totalmoney * (currentRank["employee_cut"] * 0.01)),
-
-                        misc: {
-                            voucher_name: filtered[0].voucher.name,
-                            rank_name: currentRank.name
-                        }
-                    });
-
-                    current_total_vouchers += filtered[0].leftovers;
-                    filtered[0].leftovers = 0;
-                }
-
-                loop();
-
-            }else{
-                
-                const table = document.createElement("table");
-                final.appendChild(table);
-                table.innerHTML += `<tr><th>#</th><th>Amount</th><th>Type</th><th>Rank</th><th>Employee Cut</th></tr>`;
-
-                table.innerHTML += post.map((v,i)=>{
-                    const string = `<tr><td>#${i+1}</td><td>${v.amount}</td><td>${v.misc.voucher_name}</td><td>${v.misc.rank_name}</td><td>$${Number(v.employeecut).toLocaleString("us")}</td></tr>`;
-                    delete(v.misc);
-                    return string;
-                }).join("");
-
-
-                final.innerHTML += `<hr>current_total_vouchers => ${current_total_vouchers}<br>`;
-
-                const acceptButton = document.createElement("input");
-                acceptButton.type = "button";
-                acceptButton.value = "Send data to the database";
-                final.appendChild(acceptButton);
-
-                
-                acceptButton.addEventListener("click",(e)=>{
-                    // updateEmployeeSelectList();
-                    // infobox.innerHTML = "Select employee";
-                    acceptButton.disabled = true;
-                    calculate.disabled = true;
-                    
-                    fetch("turnin_api.php",{
-                        method: 'POST',
-                        credentials: 'include',
-                        body: JSON.stringify(post)
-                        }).then(res=>res.json()).then(res=>{
-                            if(res.status && res.status === 201){
-                                response.innerHTML = `Successfuly added vouchers<br>New rows => ${res.affected_rows}<br>`;
-
-                                const refreshButton = document.createElement("input");
-                                refreshButton.type = "button";
-                                refreshButton.value = "Refresh Page";
-                                refreshButton.onclick = ()=>window.location = window.location;
-                                response.appendChild(refreshButton);
-                            }else{
-                                response.innerHTML = "Error while sending to the database #2<br>";
-                                if(res.error){
-                                    response.innerHTML+=res.error;
-                                }
-
-                                setTimeout(() => {
-                                    acceptButton.disabled = false;
-                                }, 1000);
-                                
-                            }
-                    }).catch(err=>{
-                        console.error(err);
-                        response.innerHTML = "Error while sending to the database #3";
-
-                        setTimeout(() => {
-                            acceptButton.disabled = false;
-                        }, 1000);
-                    })
-                })
-
-            }
-
-        }
-
-
-
-        function getCurrentRank(vouchers){
-            let lastRank;
-            for (let i = 0; i < filtered_auto_ranks.length; i++) {
-                if(filtered_auto_ranks[i]["vouchers_required"] <= vouchers){
-                    lastRank = filtered_auto_ranks[i];
-                }
-            }
-            return lastRank;
-        }
-
-        function getNextRank(vouchers){
-            const lastRank = filtered_auto_ranks.find(el=>el["vouchers_required"] > vouchers);
-            return lastRank === undefined ? {
-                id:"-1", name: "N/A"
-            } : {
-                ...lastRank, 
-                vouchers_needed: lastRank["vouchers_required"] - vouchers,
-            };
-        }
-
-
-    })
-})();
+function getNextRank(filtered_auto_ranks, vouchers){
+    const lastRank = filtered_auto_ranks.find(el=>el["vouchers_required"] > vouchers);
+    return lastRank === undefined ? {
+        id:"-1", name: "N/A"
+    } : {
+        ...lastRank, 
+        vouchers_needed: lastRank["vouchers_required"] - vouchers,
+    };
+};

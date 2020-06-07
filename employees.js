@@ -18,8 +18,7 @@ function fetchData(callback){
                 callback();
             }
         }else{employeediv.innerHTML = "error 2";};
-    })
-    .catch(err=>{employeediv.innerHTML = "error 1";console.log(err);});
+    }).catch(err=>{employeediv.innerHTML = "error 1";console.log(err);});
 }
 
 
@@ -101,8 +100,6 @@ function editEmployee(id){
         employeediv.appendChild(p);
     });
     employeediv.appendChild(refreshButton);
-
-    return employeediv;
 }
 
 

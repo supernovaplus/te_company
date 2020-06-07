@@ -1,5 +1,6 @@
 <?php
 require_once("./utils/check_login.php");
+$title = "employees";
 require_once("./utils/header.php");
 require_once("./utils/links.php");
 
