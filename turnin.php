@@ -5,7 +5,7 @@ require_once("./utils/header.php");
 require_once("./utils/links.php");
 ?>
 
-<div id="turnin">
+<div id="content">
 
   <div class="box upper">
     <label for="employee_names">Employee</label>

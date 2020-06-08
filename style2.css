@@ -1,0 +1,39 @@
+@import "https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400&display=swap";
+
+* {
+    font-family:'Roboto Slab',serif
+}
+
+table{
+    border-collapse:separate;
+    text-align: center;
+}
+
+tr{
+    margin: 0;
+    padding: 0;
+}
+
+td, th, table{
+    border: 1px solid rgb(221, 221, 221);
+}
+tr{
+    border: 1px solid black;
+}
+
+th{
+    background: rgb(219, 219, 219);
+    border-radius: 5px 0; 
+    border: 1px solid black;
+    padding: 5px;
+    
+}
+
+tr:hover > td{
+    background-color: rgb(221, 221, 221);
+    border: 1px solid black;
+}
+
+#links a{
+    padding: 5px;
+}

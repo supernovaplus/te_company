@@ -124,23 +124,33 @@ function windowAddNewEmployee(){
                 if(!input[i].value){
                     errors.push("Missing value on "+input[i].name);
                 }else{
-                    if(input[i].name === "join_date"){
-                        if(!input[i].value.includes("-")){
-                            errors.push("Invalid date on "+input[i].name);
-                        }else{
-                            body[input[i].name] = input[i].value;
-                        }
+                    if(input[i].name === "join_date" && !input[i].value.includes("-")){
+                        errors.push("Invalid date on "+input[i].name);
 
-                    }else if(input[i].name === "ingameid"){
-                        if(data.employees.find(el => el.ingameid == input[i].value)){
-                            errors.push("User already exits on "+input[i].name);
-                        }else{
-                            body[input[i].name] = input[i].value;
-                        }
+                    }else if(input[i].name === "ingameid" && data.employees.find(el => el.ingameid == input[i].value)){
+                        errors.push("User already exits on "+input[i].name);
 
                     }else{
                         body[input[i].name] = input[i].value;
                     }
+
+                    // if(input[i].name === "join_date"){
+                    //     if(!input[i].value.includes("-")){
+                    //         errors.push("Invalid date on "+input[i].name);
+                    //     }else{
+                    //         body[input[i].name] = input[i].value;
+                    //     }
+
+                    // }else if(input[i].name === "ingameid"){
+                    //     if(data.employees.find(el => el.ingameid == input[i].value)){
+                    //         errors.push("User already exits on "+input[i].name);
+                    //     }else{
+                    //         body[input[i].name] = input[i].value;
+                    //     }
+
+                    // }else{
+                    //     body[input[i].name] = input[i].value;
+                    // }
                 }
             }
         }
@@ -158,19 +168,20 @@ function windowAddNewEmployee(){
             body: JSON.stringify(body)
             }).then(res=>res.json()).then(res=>{
                 if(res.status && res.status === 201){
-                    responseBox.innerText = res.response;
-
-                    // submitButton.disabled = true;
+                    // responseBox.innerText = res.response;
+                    submitButton.value = res.response;
+                    responseBox.innerText = "";
+                    submitButton.disabled = true;
                 }else{
                     if(res.error){
                         responseBox.innerText = res.error;
                     }else{
-                        responseBox.innerText = "error";
+                        responseBox.innerText = "error 1";
                     }
                 }
         }).catch(err=>{
             console.error(err);
-            responseBox.innerText = "NO";
+            responseBox.innerText = "error 2";
         });
     };
     div.appendChild(submitButton);
@@ -210,7 +221,9 @@ function windowEditEmployee(id){
                         id: found.rankid,
                         name: "custom_rank",
                         isDisabled: true,
-                        isRequired: false
+                        isRequired: false,
+
+                        table
                     });
                     break;
     
@@ -252,6 +265,12 @@ function backButton(){
 
 
 function generateCustomRank(obj){
+    // const aa = cel(["select",{id: "customRankSelect", name: obj.name || "opt", disabled: obj.isDisabled, required: obj.isRequired},
+    //     ...data.ranks.map(rank=>["option", {value: rank.id, selected: rank.id == obj.id, innerText: `${rank.id} - ${rank.name}`}])
+    // ]])
+
+    // obj.table.appendChild(aa);
+
     return `<select id="customRankSelect" name="${obj.name || "opt"}" ${obj.isDisabled ? "disabled" : ""} ${obj.isRequired ? "required" : ""}>
     ${data.ranks.map(rank=>`<option value="${rank.id}" ${rank.id == obj.id ? "selected" : ""}>${rank.id} - ${rank.name}</option>`).join("")}
     </select>`;
