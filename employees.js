@@ -1,4 +1,4 @@
-const div = document.getElementById("content");
+const root = document.getElementById("root");
 var data = [];
 
 fetchData();
@@ -8,7 +8,7 @@ function fetchData(callback){
     .then(res=>res.json())
     .then(res=>{
         if(res.error !== null){
-            div.innerHTML = res.error;
+            root.innerHTML = res.error;
             return;
         }else if(res.employees.length > 0){
             data = res;
@@ -18,22 +18,24 @@ function fetchData(callback){
                 callback();
             }
         }else{
-            div.innerHTML = "error 2";
+            root.innerHTML = "error 2";
         };
     }).catch(err=>{
-        div.innerHTML = "error 1";
+        root.innerHTML = "error 1";
         console.log(err);
     });
 }
 
 
 function windowAllEmployees(){
-    div.innerHTML = "";
+    root.innerHTML = "";
     const table = document.createElement("table");
-    div.appendChild(table);
-
-    const filter = ["leave_date"];
+    const filter = ["leave_date", "custom_rank"];
     const keys = Object.keys(data.employees[0]).filter(k => !filter.includes(k) );
+    
+    if(data.user.permission_name === "ceo" || data.user.permission_name === "hr"){
+        root.appendChild(cel(["input",{type:"button", value: "add new employee", onclick: windowAddNewEmployee}]));
+    }
 
     table.appendChild(cel(["tr",   ...keys.map(k => ["th", {innerText: k}]), ["th", {innerText: "action"}]]));
 
@@ -43,116 +45,118 @@ function windowAllEmployees(){
         }}]]]));
     }
 
-    if(data.user.permission_name === "ceo" || data.user.permission_name === "hr"){
-        div.appendChild(cel(["input",{type:"button", value: "add new employee", onclick: windowAddNewEmployee}]));
-    }
+    root.appendChild(table);
 }
+
+function inputType(key){switch(key){
+        case("ingameid"):
+        case("discordid"):
+            return ["input",{type: "number", name: key, value:"", required: true}];
+        case("custom_rank"):
+            return generateCustomRank({
+                id: 5,
+                name: "custom_rank",
+                isDisabled: false,
+                isRequired: true
+            });
+        case("auto_rank"):
+            return generateTrueFalseField({
+                default: 1,
+                name: "auto_rank",
+                options: ["Automatic Rank","Custom Rank"],
+                isDisabled: false,
+                isRequired: true
+            });
+        case("join_date"):
+            return ["input", {type: "text", name: key, value: new Date().toLocaleString('lt', { timeZone: 'GMT' }), required: true}];
+        case("note"):
+            return ["input", {type: "text", name: key, value:""}];
+        default:
+            return ["input",{type: "text", name: key, value: "", required: true}];
+};};
+
+function inputType2(key, found){
+    if(!data.user.permissions[key]){
+        return found[key];
+    }else{
+        //     string += `<input type="checkbox" onclick="this.nextElementSibling.disabled = !this.nextElementSibling.disabled"></input>`;
+        const prefix = ["input", {type: "checkbox", onclick: (e)=>{
+            e.target.nextElementSibling.disabled = !e.target.nextElementSibling.disabled
+        }}];
+
+        switch(key){
+            case("ingameid"):
+            case("discordid"):
+                return [prefix,["input",{type: "text", name: key, value: found[key], disabled: true, required: true}]];
+            case("custom_rank"):
+                return [prefix, generateCustomRank({
+                    id: found.rankid,
+                    name: "custom_rank",
+                    isDisabled: true,
+                    isRequired: true
+                })];
+
+            case("auto_rank"):
+                return [prefix, generateTrueFalseField({
+                    default: found.auto_rank,
+                    name: "auto_rank",
+                    options: ["Automatic Rank","Custom Rank"],
+                    isDisabled: true,
+                    isRequired: true
+                })];
+
+            case("leave_date"):
+                return [prefix, 
+                    ["input",{type: "text", name: key, value: found[key], disabled: true}], 
+                    ["p", {innerText: `Today is: ${new Date().toLocaleString('lt', { timeZone: 'GMT' })}`}]];
+            case("join_date"):
+                return [prefix, ["input", {type: "text", name: key, value: new Date().toLocaleString('lt', { timeZone: 'GMT' }), required: true, disabled: true}]];
+            case("note"):
+                return [prefix, ["input", {type: "text", name: key, value:"", disabled: true}]];
+            default:
+                return [prefix, ["input",{type: "text", name: key, value: found[key], disabled: true, required: true}]];
+        };
+    };
+};
 
 
 function windowAddNewEmployee(){
-    div.innerHTML = "";
+    root.innerHTML = "";
     const filter = ["id","vouchers","rank","leave_date"];
-    const column_names = Object.keys(data.employees[0]);
+    const keys = Object.keys(data.employees[0]).filter(k => !filter.includes(k) );
 
-    const form = document.createElement("form");
-    form.autocomplete = "off";
-    div.appendChild(form);
-    const table = document.createElement("table");
-    for (let i = 0; i < column_names.length; i++) {
-        const colname = column_names[i];
-        if(filter.includes(colname)) continue;
-        let string = `<tr><th>${colname}</th><td>`;
-
-        switch(colname){
-            case("ingameid"):
-            case("discordid"):
-                string += `<input type="number" name="${colname}" value="" required></input>`;
-                break;
-
-            case("custom_rank"):
-                string += generateCustomRank({
-                    id: 5,
-                    name: "custom_rank",
-                    isDisabled: false,
-                    isRequired: true
-                });
-                break;
-
-            case("auto_rank"):
-                string += generateTrueFalseField({
-                    default: 1,
-                    name: "auto_rank",
-                    options: ["Automatic Rank","Custom Rank"],
-                    isDisabled: false,
-                    isRequired: true
-                });
-                break;
-
-            case("join_date"):
-                string += `<input type="text" name="${colname}" value="${new Date().toLocaleString('lt', { timeZone: 'GMT' })}" required></input><br>`;
-                break;
-
-            case("note"):
-                string += `<input type="text" name="${colname}" value=""></input>`;
-                break;
-
-            default:
-                string += `<input type="text" name="${colname}" value="" required></input>`;
-                break;
-        }
-
-        table.innerHTML += string + "</td></tr>";
-    }
-    form.appendChild(table);
+    root.appendChild(
+        cel(["form", {autocomplete: "off"},
+                ["table", ...keys.map(k => 
+                    ["tr",
+                        ["th", {innerText: k}], 
+                        ["td",inputType(k)]] 
+                    )]]));
 
     const responseBox = document.createElement("p");
-    div.appendChild(responseBox);
+    root.appendChild(responseBox);
 
     const input = [...document.querySelectorAll("input:not([type=button]),select")];
-    const submitButton = document.createElement("input");
-    submitButton.type = "button";
-    submitButton.value = "submit";
+
+    const submitButton = cel(["input", {type: "button", value: "submit"}]);
     submitButton.onclick = () => {
         const errors = [];
         const body = {};
         for (let i = 0; i < input.length; i++) {
-            if(!input[i].required){
-                if(input[i].value){
-                    body[input[i].name] = input[i].value;
-                }
-            }else{
+            if(input[i].required){
                 if(!input[i].value){
                     errors.push("Missing value on "+input[i].name);
+                }else if(input[i].name === "join_date" && !input[i].value.includes("-")){
+                    errors.push("Invalid date on "+input[i].name);
+                }else if(input[i].name === "ingameid" && data.employees.find(el => el.ingameid == input[i].value)){
+                    errors.push("User already exits on "+input[i].name);
                 }else{
-                    if(input[i].name === "join_date" && !input[i].value.includes("-")){
-                        errors.push("Invalid date on "+input[i].name);
-
-                    }else if(input[i].name === "ingameid" && data.employees.find(el => el.ingameid == input[i].value)){
-                        errors.push("User already exits on "+input[i].name);
-
-                    }else{
-                        body[input[i].name] = input[i].value;
-                    }
-
-                    // if(input[i].name === "join_date"){
-                    //     if(!input[i].value.includes("-")){
-                    //         errors.push("Invalid date on "+input[i].name);
-                    //     }else{
-                    //         body[input[i].name] = input[i].value;
-                    //     }
-
-                    // }else if(input[i].name === "ingameid"){
-                    //     if(data.employees.find(el => el.ingameid == input[i].value)){
-                    //         errors.push("User already exits on "+input[i].name);
-                    //     }else{
-                    //         body[input[i].name] = input[i].value;
-                    //     }
-
-                    // }else{
-                    //     body[input[i].name] = input[i].value;
-                    // }
+                    body[input[i].name] = input[i].value;
                 }
+            }else if(input[i].value){
+                body[input[i].name] = input[i].value;
             }
+
         }
 
         if(errors.length > 0){
@@ -161,14 +165,12 @@ function windowAddNewEmployee(){
         }
         
         console.log(body);
-        // responseBox.innerText = `${JSON.stringify(body)}`;
         fetch("employees_api.php",{
             method: 'PUT',
             credentials: 'include',
             body: JSON.stringify(body)
             }).then(res=>res.json()).then(res=>{
                 if(res.status && res.status === 201){
-                    // responseBox.innerText = res.response;
                     submitButton.value = res.response;
                     responseBox.innerText = "";
                     submitButton.disabled = true;
@@ -184,102 +186,47 @@ function windowAddNewEmployee(){
             responseBox.innerText = "error 2";
         });
     };
-    div.appendChild(submitButton);
-    
+    root.appendChild(submitButton);
+
     backButton();
 }
-
-
-
 
 function windowEditEmployee(id){
     const found = data.employees.find(el=>el.id == id);
     if(!found) return;
+    root.innerHTML = "";
+    const keys = Object.keys(data.employees[0]);
 
-    div.innerHTML = "";
-    const column_names = Object.keys(data.employees[0]);
-
-    const table = document.createElement("table");
-    for (let i = 0; i < column_names.length; i++) {
-        const colname = column_names[i];
-        let string = "";
-        
-        string += `<tr><th>${colname}</th><td>`;
-        if(data.user.permissions[colname] === undefined || data.user.permissions[colname] === false){
-            string += found[colname];
-        }else{
-            string += `<input type="checkbox" onclick="this.nextElementSibling.disabled = !this.nextElementSibling.disabled"></input>`;
-
-            switch(colname){
-                case("ingameid"):
-                case("discordid"):
-                    string += `<input type="number" name="${colname}" value="${found[colname]}" disabled></input>`;
-                    break;
-
-                case("custom_rank"):
-                    string += generateCustomRank({
-                        id: found.rankid,
-                        name: "custom_rank",
-                        isDisabled: true,
-                        isRequired: false,
-
-                        table
-                    });
-                    break;
+    root.appendChild(
+        cel(["form", {autocomplete: "off"},
+                ["table", ...keys.map(k => 
+                    ["tr",
+                        ["th", {innerText: k}], 
+                        ["td",...inputType2(k, found)]] 
+                    )]]));
     
-                case("auto_rank"):
-                    string += generateTrueFalseField({
-                        default: found.auto_rank,
-                        name: "auto_rank",
-                        options: ["Automatic Rank","Custom Rank"],
-                        isDisabled: true,
-                        isRequired: false
-                    });
-                    break;
-
-                case("leave_date"):
-                    string += `<input type="text" name="${colname}" value="${found[colname]}" disabled></input><br>
-                    Today is: ${new Date().toLocaleString('lt', { timeZone: 'GMT' })}`;
-                    break;
-
-                default:
-                    string += `<input type="text" name="${colname}" value="${found[colname]}" disabled></input>`;
-                    break;
-            }
-        }
-        table.innerHTML += string + "</td><tr/>";
-    }
-    div.appendChild(table);
-
     backButton();
 
-    div.appendChild(cel(["input", {type: "button", value: "refresh", onclick: () => fetchData(()=>{
+    root.appendChild(cel(["input", {type: "button", value: "refresh", onclick: () => fetchData(()=>{
         windowEditEmployee(id);
-        div.appendChild(cel(["p",{innerText: `Refreshed ${new Date().toTimeString()}`}]));
+        root.appendChild(cel(["p",{innerText: `Refreshed ${new Date().toTimeString()}`}]));
     })}]));
 }
 
 function backButton(){
-    div.appendChild(cel(["input",{type: "button", value: "back", onclick: windowAllEmployees}]));
+    root.appendChild(cel(["input",{type: "button", value: "back", onclick: windowAllEmployees}]));
 }
 
 
 function generateCustomRank(obj){
-    // const aa = cel(["select",{id: "customRankSelect", name: obj.name || "opt", disabled: obj.isDisabled, required: obj.isRequired},
-    //     ...data.ranks.map(rank=>["option", {value: rank.id, selected: rank.id == obj.id, innerText: `${rank.id} - ${rank.name}`}])
-    // ]])
-
-    // obj.table.appendChild(aa);
-
-    return `<select id="customRankSelect" name="${obj.name || "opt"}" ${obj.isDisabled ? "disabled" : ""} ${obj.isRequired ? "required" : ""}>
-    ${data.ranks.map(rank=>`<option value="${rank.id}" ${rank.id == obj.id ? "selected" : ""}>${rank.id} - ${rank.name}</option>`).join("")}
-    </select>`;
+    return ["select",{id: "customRankSelect", name: obj.name || "opt", disabled: obj.isDisabled, required: obj.isRequired},
+        ...data.ranks.map(rank=>["option", {value: rank.id, selected: rank.id == obj.id, innerText: `${rank.id} - ${rank.name}`}])
+    ];
 }
 
 function generateTrueFalseField(obj){
-    return `
-    <select id="${obj.name || "opt"}" name="${obj.name || "opt"}" ${obj.isDisabled ? "disabled" : ""} ${obj.isRequired ? "required" : ""}>
-        <option value="1" ${obj.default === "1" ? "selected" : ""}>1 - ${obj.options[0] || "true"} (default)</option>
-        <option value="0" ${obj.default === "0" ? "selected" : ""}>0 - ${obj.options[1] || "false"}</option>
-    </select>`;
+    return ["select", {id: obj.name || "opt", name: obj.name || "opt", disabled: obj.isDisabled, required: obj.isRequired},
+        ["option",{value: "1", selected: obj.default === "1", innerText: `1 - ${obj.options[0] || "true"} (default)`}],
+        ["option",{value: "0", selected: obj.default === "0", innerText: `0 - ${obj.options[1] || "false"}`}]
+    ];
 }

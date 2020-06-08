@@ -4,9 +4,23 @@
     font-family:'Roboto Slab',serif
 }
 
+body{
+    /* margin: auto; */
+    /* width: 1000px; */
+}
+
+p{
+    margin: 0;
+    padding: 0;
+}
+
 table{
-    border-collapse:separate;
+    /* table-layout:fixed; */
+    /* white-space: pre; */
+    /* overflow:hidden; */
+    border-collapse: separate;
     text-align: center;
+    width: 100%;
 }
 
 tr{
@@ -36,4 +50,15 @@ tr:hover > td{
 
 #links a{
     padding: 5px;
+}
+
+td,tr,th{
+    box-sizing: border-box;
+
+}
+
+input, select{
+    text-align: center;
+    /* width: 100%; */
+    box-sizing: border-box;
 }

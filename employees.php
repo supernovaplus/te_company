@@ -4,7 +4,7 @@ $title = "employees";
 require_once("./utils/header.php");
 require_once("./utils/links.php");
 
-echo '<div id="content"></div>
+echo '<div id="root"></div>
 <script src="utils/misc.js"></script>
 <script src="employees.js"></script>';
 
