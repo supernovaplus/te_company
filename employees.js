@@ -48,76 +48,7 @@ function windowAllEmployees(){
     root.appendChild(table);
 }
 
-function inputType(key){switch(key){
-        case("ingameid"):
-        case("discordid"):
-            return ["input",{type: "number", name: key, value:"", required: true}];
-        case("custom_rank"):
-            return generateCustomRank({
-                id: 5,
-                name: "custom_rank",
-                isDisabled: false,
-                isRequired: true
-            });
-        case("auto_rank"):
-            return generateTrueFalseField({
-                default: 1,
-                name: "auto_rank",
-                options: ["Automatic Rank","Custom Rank"],
-                isDisabled: false,
-                isRequired: true
-            });
-        case("join_date"):
-            return ["input", {type: "text", name: key, value: new Date().toLocaleString('lt', { timeZone: 'GMT' }), required: true}];
-        case("note"):
-            return ["input", {type: "text", name: key, value:""}];
-        default:
-            return ["input",{type: "text", name: key, value: "", required: true}];
-};};
 
-function inputType2(key, found){
-    if(!data.user.permissions[key]){
-        return found[key];
-    }else{
-        //     string += `<input type="checkbox" onclick="this.nextElementSibling.disabled = !this.nextElementSibling.disabled"></input>`;
-        const prefix = ["input", {type: "checkbox", onclick: (e)=>{
-            e.target.nextElementSibling.disabled = !e.target.nextElementSibling.disabled
-        }}];
-
-        switch(key){
-            case("ingameid"):
-            case("discordid"):
-                return [prefix,["input",{type: "text", name: key, value: found[key], disabled: true, required: true}]];
-            case("custom_rank"):
-                return [prefix, generateCustomRank({
-                    id: found.rankid,
-                    name: "custom_rank",
-                    isDisabled: true,
-                    isRequired: true
-                })];
-
-            case("auto_rank"):
-                return [prefix, generateTrueFalseField({
-                    default: found.auto_rank,
-                    name: "auto_rank",
-                    options: ["Automatic Rank","Custom Rank"],
-                    isDisabled: true,
-                    isRequired: true
-                })];
-
-            case("leave_date"):
-                return [prefix, 
-                    ["input",{type: "text", name: key, value: found[key], disabled: true}], 
-                    ["p", {innerText: `Today is: ${new Date().toLocaleString('lt', { timeZone: 'GMT' })}`}]];
-            case("join_date"):
-                return [prefix, ["input", {type: "text", name: key, value: new Date().toLocaleString('lt', { timeZone: 'GMT' }), required: true, disabled: true}]];
-            case("note"):
-                return [prefix, ["input", {type: "text", name: key, value:"", disabled: true}]];
-            default:
-                return [prefix, ["input",{type: "text", name: key, value: found[key], disabled: true, required: true}]];
-        };
-    };
-};
 
 
 function windowAddNewEmployee(){
@@ -130,7 +61,7 @@ function windowAddNewEmployee(){
                 ["table", ...keys.map(k => 
                     ["tr",
                         ["th", {innerText: k}], 
-                        ["td",inputType(k)]] 
+                        ["td", type_add_new(k)]] 
                     )]]));
 
     const responseBox = document.createElement("p");
@@ -160,8 +91,7 @@ function windowAddNewEmployee(){
         }
 
         if(errors.length > 0){
-            responseBox.innerText = `Errors in input fields: \n${errors.join("\n")}`;
-            return;
+            responseBox.innerText = _err("\n" + errors.join("\n")); return;
         }
         
         console.log(body);
@@ -176,14 +106,14 @@ function windowAddNewEmployee(){
                     submitButton.disabled = true;
                 }else{
                     if(res.error){
-                        responseBox.innerText = res.error;
+                        responseBox.innerText = _err(res.error);
                     }else{
-                        responseBox.innerText = "error 1";
+                        responseBox.innerText = _err("#G1");
                     }
                 }
         }).catch(err=>{
             console.error(err);
-            responseBox.innerText = "error 2";
+            responseBox.innerText = _err("#G2");
         });
     };
     root.appendChild(submitButton);
@@ -202,8 +132,67 @@ function windowEditEmployee(id){
                 ["table", ...keys.map(k => 
                     ["tr",
                         ["th", {innerText: k}], 
-                        ["td",...inputType2(k, found)]] 
+                        ["td", ...type_edit_emp(k, found)]] 
                     )]]));
+    
+    const input = [...document.querySelectorAll("input:not([type=button]):not([type=checkbox]),select")]
+
+    const responseBox = document.createElement("p");
+    const submitButton = cel(["input", {type: "button", value: "submit"}]);
+    submitButton.onclick = () => {
+        const errors = [];
+        const body = {};
+        for (let i = 0; i < input.length; i++) {
+            if(input[i].disabled) continue;
+            if(input[i].required){
+                if(!input[i].value){
+                    errors.push("Missing value on "+input[i].name);
+                }else if(input[i].name === "join_date" && !input[i].value.includes("-")){
+                    errors.push("Invalid date on "+input[i].name);
+                }else if(input[i].name === "ingameid" && data.employees.find(el => el.ingameid == input[i].value)){
+                    errors.push("User already exits on "+input[i].name);
+                }else{
+                    body[input[i].name] = input[i].value;
+                }
+            }else if(input[i].value){
+                body[input[i].name] = input[i].value;
+            }
+        }
+
+        if(errors.length > 0){
+            responseBox.innerText = _err("\n" + errors.join("\n")); return;
+        }
+
+        if(Object.keys(body).length === 0){
+            responseBox.innerText = _err("Nothing to update"); return;
+        }
+        
+        body.id = id;
+
+        console.log(body);
+        fetch("employees_api.php",{
+            method: 'UPDATE',
+            credentials: 'include',
+            body: JSON.stringify(body)
+            }).then(res=>res.json()).then(res=>{
+                if(res.status && res.status === 201){
+                    submitButton.value = res.response;
+                    responseBox.innerText = "";
+                    submitButton.disabled = true;
+                }else{
+                    if(res.error){
+                        responseBox.innerText = _err(res.error);
+                    }else{
+                        responseBox.innerText = _err("#L1");
+                    }
+                }
+        }).catch(err=>{
+            console.error(err);
+            responseBox.innerText = _err("#L2");
+        });
+    };
+    root.appendChild(responseBox);
+    root.appendChild(submitButton);
     
     backButton();
 
@@ -215,6 +204,10 @@ function windowEditEmployee(id){
 
 function backButton(){
     root.appendChild(cel(["input",{type: "button", value: "back", onclick: windowAllEmployees}]));
+}
+
+function _err(string){
+    return "Error: " + string;
 }
 
 
@@ -230,3 +223,75 @@ function generateTrueFalseField(obj){
         ["option",{value: "0", selected: obj.default === "0", innerText: `0 - ${obj.options[1] || "false"}`}]
     ];
 }
+
+function type_add_new(key){
+    switch(key){
+        case("ingameid"):
+        case("discordid"):
+            return ["input",{type: "number", name: key, value:"", required: true}];
+        case("custom_rank"):
+            return generateCustomRank({
+                id: 5,
+                name: "custom_rank",
+                isDisabled: false,
+                isRequired: true
+            });
+        case("auto_rank"):
+            return generateTrueFalseField({
+                default: 1,
+                name: "auto_rank",
+                options: ["Automatic Rank","Custom Rank"],
+                isDisabled: false,
+                isRequired: true
+            });
+        case("join_date"):
+            return ["input", {type: "text", name: key, value: new Date().toLocaleString('lt', { timeZone: 'GMT' }), required: true}];
+        case("note"):
+            return ["input", {type: "text", name: key, value:""}];
+        default:
+            return ["input",{type: "text", name: key, value: "", required: true}];
+    };
+};
+
+function type_edit_emp(key, found){
+    if(!data.user.permissions[key]){
+        return found[key];
+    }else{
+        const prefix = ["input", {type: "checkbox", onclick: (e)=>{
+            e.target.nextElementSibling.disabled = !e.target.nextElementSibling.disabled
+        }}];
+
+        switch(key){
+            case("ingameid"):
+            case("discordid"):
+                return [prefix,["input",{type: "text", name: key, value: found[key], disabled: true, required: true}]];
+            case("custom_rank"):
+                return [prefix, 
+                    generateCustomRank({
+                        id: found.rankid,
+                        name: "custom_rank",
+                        isDisabled: true,
+                        isRequired: true
+                    })];
+            case("auto_rank"):
+                return [prefix, 
+                    generateTrueFalseField({
+                        default: found.auto_rank,
+                        name: "auto_rank",
+                        options: ["Automatic Rank","Custom Rank"],
+                        isDisabled: true,
+                        isRequired: true
+                    })];
+            case("leave_date"):
+                return [prefix, 
+                        ["input",{type: "text", name: key, value: found[key], disabled: true}], 
+                        ["p", {innerText: `Today is: ${new Date().toLocaleString('lt', { timeZone: 'GMT' })}`}]];
+            case("join_date"):
+                return [prefix, ["input", {type: "text", name: key, value: new Date().toLocaleString('lt', { timeZone: 'GMT' }), required: true, disabled: true}]];
+            case("note"):
+                return [prefix, ["input", {type: "text", name: key, value:"", disabled: true}]];
+            default:
+                return [prefix, ["input",{type: "text", name: key, value: found[key], disabled: true, required: true}]];
+        };
+    };
+};
