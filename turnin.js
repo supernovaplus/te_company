@@ -6,7 +6,7 @@ const final = document.getElementById("final");
 const response = document.getElementById("response");
 let nameClicked = ()=>{};
 let data, filtered_auto_ranks;
-let selected_employee = {}, inputsList = {};
+let selected_employee, inputsList = {};
 
 fetch("data.php")
     .then(res=>res.json())
@@ -21,8 +21,8 @@ fetch("data.php")
             filtered_auto_ranks = Object.values(data.ranks.filter(r=>r["auto_vouchers"] === "1"))
                 .map(r=>({
                     ...r, 
-                    vouchers_required: +r.vouchers_required,
-                    employee_cut: +r.employee_cut,
+                    vouchers_required: parseInt(r.vouchers_required),
+                    employee_cut: parseInt(r.employee_cut),
                 })).sort((a,b) => a.vouchers_required - b.vouchers_required);
 
             infobox.innerHTML = "Select employee";
@@ -70,7 +70,7 @@ nameClicked = (id) => {
 }
 
 function handleCalculateButton(e){
-    if(Object.keys(selected_employee).length === 0){
+    if(!selected_employee){
         final.innerHTML = "No employee is selected.";
         return;
     }else{
@@ -94,8 +94,8 @@ function handleCalculateButton(e){
         return;
     }
 
-    const post = [];
-    const accepted_by_id = 5;
+    
+    const body = [];
     loop();
 
     function loop(){
@@ -115,19 +115,23 @@ function handleCalculateButton(e){
             if(newNextRank.id !== "-1" && 
                 (current_total_vouchers + filtered[0].leftovers) - newNextRank.vouchers_needed > newNextRank.vouchers_needed){
 
-                const totalmoney = newNextRank.vouchers_needed * parseInt(filtered[0].voucher.price);
-                post.push({
+                const total_calculated_sum = newNextRank.vouchers_needed * parseInt(filtered[0].voucher.price);
+
+                body.push({
                     amount: parseInt(newNextRank.vouchers_needed),
-                    accepted_by_id,
-                    employeeid: parseInt(selected_employee.id),
-                    rankid: parseInt(currentRank.id),
-                    voucherid: parseInt(filtered[0].voucher.id),
-                    totalmoney,
-                    employeecut: Math.round(totalmoney * (currentRank["employee_cut"] * 0.01)),
+                    employee_id: parseInt(selected_employee.id),
+                    rank_id: parseInt(currentRank.id),
+                    vouchers_id: parseInt(filtered[0].voucher.id),
+                    total_calculated_sum,
+                    
+                    employee_cut: currentRank["employee_cut"],
+                    accepted_by_id: data.user.eid,
+                    vouchers_holding_id: data.user.eid,
 
                     misc: {
                         voucher_name: filtered[0].voucher.name,
-                        rank_name: currentRank.name
+                        rank_name: currentRank.name,
+                        employeecut: Math.round(total_calculated_sum * (currentRank["employee_cut"] * 0.01))
                     }
                 });
 
@@ -137,19 +141,22 @@ function handleCalculateButton(e){
             //if less than needed
             }else{
 
-                const totalmoney = filtered[0].leftovers * parseInt(filtered[0].voucher.price);
-                post.push({
+                const total_calculated_sum = filtered[0].leftovers * parseInt(filtered[0].voucher.price);
+                body.push({
                     amount: parseInt(filtered[0].leftovers),
-                    accepted_by_id,
-                    employeeid: parseInt(selected_employee.id),
-                    rankid: parseInt(currentRank.id),
-                    voucherid: parseInt(filtered[0].voucher.id),
-                    totalmoney,
-                    employeecut: Math.round(totalmoney * (currentRank["employee_cut"] * 0.01)),
+                    employee_id: parseInt(selected_employee.id),
+                    rank_id: parseInt(currentRank.id),
+                    vouchers_id: parseInt(filtered[0].voucher.id),
+                    total_calculated_sum,
+                    
+                    employee_cut: currentRank["employee_cut"],
+                    accepted_by_id: data.user.eid,
+                    vouchers_holding_id: data.user.eid,
 
                     misc: {
                         voucher_name: filtered[0].voucher.name,
-                        rank_name: currentRank.name
+                        rank_name: currentRank.name,
+                        employeecut: Math.round(total_calculated_sum * (currentRank["employee_cut"] * 0.01))
                     }
                 });
 
@@ -165,8 +172,8 @@ function handleCalculateButton(e){
             final.appendChild(table);
             table.innerHTML += `<tr><th>#</th><th>Amount</th><th>Type</th><th>Rank</th><th>Employee Cut</th></tr>`;
 
-            table.innerHTML += post.map((v,i)=>{
-                const string = `<tr><td>#${i+1}</td><td>${v.amount}</td><td>${v.misc.voucher_name}</td><td>${v.misc.rank_name}</td><td>$${Number(v.employeecut).toLocaleString("us")}</td></tr>`;
+            table.innerHTML += body.map((v,i)=>{
+                const string = `<tr><td>#${i+1}</td><td>${v.amount}</td><td>${v.misc.voucher_name}</td><td>${v.misc.rank_name}</td><td>$${Number(v.misc.employeecut).toLocaleString("us")}</td></tr>`;
                 delete(v.misc);
                 return string;
             }).join("");
@@ -181,18 +188,17 @@ function handleCalculateButton(e){
 
             
             acceptButton.addEventListener("click",(e)=>{
-                // updateEmployeeSelectList();
-                // infobox.innerHTML = "Select employee";
                 acceptButton.disabled = true;
                 calculate.disabled = true;
                 
+                console.log(body);
                 fetch("turnin_api.php",{
                     method: 'POST',
                     credentials: 'include',
-                    body: JSON.stringify(post)
+                    body: JSON.stringify(body)
                     }).then(res=>res.json()).then(res=>{
                         if(res.status && res.status === 201){
-                            response.innerHTML = `Successfuly added vouchers<br>New rows => ${res.affected_rows}<br>`;
+                            response.innerHTML = res.response + "<br>";
 
                             const refreshButton = document.createElement("input");
                             refreshButton.type = "button";
@@ -202,7 +208,7 @@ function handleCalculateButton(e){
                         }else{
                             response.innerHTML = "Error while sending to the database #2<br>";
                             if(res.error){
-                                response.innerHTML+=res.error;
+                                response.innerHTML += res.error;
                             }
 
                             setTimeout(() => {

@@ -3,12 +3,11 @@ require_once("./utils/check_login_json.php");
 $entityBody = file_get_contents('php://input');
 require_once("./utils/conn_json.php");
 $body = json_decode($entityBody);
-
+error_reporting(E_ALL);
 $response = (object) array(
     'status' => 400, 
-    'affected_rows' => 0, 
     'error' => null, 
-    'vouchers_added' => 0
+    'response' => null
 );
 
 if ($conn -> connect_errno) {
@@ -23,45 +22,57 @@ if(!isset($body)){
     die(json_encode($response));
 }
 
-try {
 
-    $stmt = $conn->prepare("INSERT INTO transactions (employee_id, amount, vouchers_id, accepted_by_id, vouchers_holding_id, rank_id, employee_got, total_calculated_sum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("iiiiiiii",   $employee_id, 
-                                    $amount, 
-                                    $vouchers_id, 
-                                    $accepted_by_id, 
-                                    $vouchers_holding_id, 
-                                    $rank_id, 
-                                    $employee_got, 
-                                    $total_calculated_sum
-                                );
-    
+if(isset($body) && count($body) > 0){
+
+    function trybind_insert($data){
+        $arr = [];
+        $values = "";
+        $types = "";
+        $query = "";
+        for ($i=0; $i < count($data); $i++) { 
+            if(isset($data[$i][0])){
+                array_push($arr, $data[$i][0]);
+                if(count($arr) > 1){ $values .= ", "; $query .= ", "; }
+                $values .= "?";
+                $query .= $data[$i][1];
+                $types .= $data[$i][2];
+            }
+        }
+        return (object) array('arr' => $arr, 'values' => $values, 'types' => $types, 'query' => $query);
+    }
+
     for ($i=0; $i < count($body); $i++) { 
-        $employee_id =  $body[$i]->employeeid;
-        $amount =       $body[$i]->amount;
-        $vouchers_id =  $body[$i]->voucherid;
-        $accepted_by_id =  $body[$i]->accepted_by_id;
-        $vouchers_holding_id = $body[$i]->accepted_by_id;
-        $rank_id =      $body[$i]->rankid;
-        $employee_got = $body[$i]->employeecut;
-        $total_calculated_sum = $body[$i]->totalmoney;
 
-        if($stmt->execute()){
-            $response->status = 201;
-            $response->affected_rows++;
-            $response->vouchers_added += $amount;
+        $insert = trybind_insert([
+            [$body[$i]->employee_id,            "employee_id",          "i"],
+            [$body[$i]->amount,                 "amount",               "i"],
+            [$body[$i]->vouchers_id,            "vouchers_id",          "i"],
+            [$body[$i]->accepted_by_id,         "accepted_by_id",       "i"],
+            [$body[$i]->vouchers_holding_id,    "vouchers_holding_id",  "i"],
+            [$body[$i]->rank_id,                "rank_id",              "i"],
+            [$body[$i]->employee_cut,           "employee_cut",         "i"],
+            [$body[$i]->total_calculated_sum,   "total_calculated_sum", "i"]
+        ]);
+
+        if($stmt = $conn->prepare("INSERT INTO transactions ( $insert->query ) VALUES ( $insert->values )")){
+            $stmt->bind_param($insert->types, ...$insert->arr);
+    
+            if($stmt->execute()){
+                $response->response = "Data saved";
+                $response->status = 201;
+            }else{
+                $response->error = $stmt->error;
+            }
+    
         }else{
-            $response->error = "row not added";
+            $response->error = "Error while inserting values #2";
         }
     }
 
-    $stmt->close();
-    $conn->close();
-    
-
-} catch(PDOException $e) {
-    $response->status = 500;
-    $response->error = $e->getMessage();
+}else{
+    $response->error = "Invalid Body";
 }
 
+$conn->close();
 echo json_encode($response);

@@ -5,9 +5,12 @@
 }
 
 body{
-    /* margin: auto; */
+    margin: auto;
     /* width: 1000px; */
 }
+
+
+
 
 p{
     margin: 0;
@@ -46,6 +49,10 @@ th{
 tr:hover > td{
     background-color: rgb(221, 221, 221);
     border: 1px solid black;
+}
+
+#links {
+    margin: auto;
 }
 
 #links a{

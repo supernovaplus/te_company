@@ -3,9 +3,8 @@ require_once("./utils/check_login.php");
 $title = "turnin";
 require_once("./utils/header.php");
 require_once("./utils/links.php");
-?>
 
-<div id="content">
+echo '<div id="root">
 
   <div class="box upper">
     <label for="employee_names">Employee</label>
@@ -19,7 +18,7 @@ require_once("./utils/links.php");
 
 </div>
 
-<script src="./turnin.js"></script>
+<script src="utils/misc.js"></script>
+<script src="turnin.js"></script>';
 
-<?php
 require_once("./utils/footer.php");

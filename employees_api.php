@@ -85,7 +85,7 @@ switch($_SERVER['REQUEST_METHOD']){
                     $values .= "?";
                     $query .= $data[$i][1];
                     $types .= $data[$i][2];
-                }else if
+                }
             }
             return (object) array('arr' => $arr, 'values' => $values, 'types' => $types, 'query' => $query);
         }
