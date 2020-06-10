@@ -4,6 +4,12 @@ $entityBody = file_get_contents('php://input');
 $body = json_decode($entityBody);
 include_once("./utils/conn_json.php");
 
+
+// error_reporting(E_ALL);
+
+
+
+
 $response = (object) array(
     'status' => 400, 
     'error' => null,
@@ -73,7 +79,7 @@ switch($_SERVER['REQUEST_METHOD']){
         if(!$user["permission_name"] == "ceo" && !$user["permission_name"] == "hr"){ $response->error = "Missing permissions"; break;}
         if(!isset($body->join_date) || !isset($body->ingameid) ){ $response->error = "Invalid body"; break; }
 
-        function trybind_insert($data, $isRequired){
+        function trybind_insert($data){
             $arr = [];
             $values = "";
             $types = "";
@@ -95,6 +101,7 @@ switch($_SERVER['REQUEST_METHOD']){
             [$body->ingameid,       "ingameid",     "i"],
             [$body->join_date,      "join_date",    "s"],
             [$body->auto_rank,      "auto_rank",    "i"],
+            [$body->note,           "note",         "s"],
             [$body->custom_rank,    "custom_rank",  "i"],
             [$body->discordid,      "discordid",    "i"],
         ]);

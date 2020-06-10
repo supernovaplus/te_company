@@ -3,7 +3,11 @@ require_once("./utils/check_login_json.php");
 $entityBody = file_get_contents('php://input');
 require_once("./utils/conn_json.php");
 $body = json_decode($entityBody);
+
+
 error_reporting(E_ALL);
+
+
 $response = (object) array(
     'status' => 400, 
     'error' => null, 

@@ -1,5 +1,5 @@
 const root = document.getElementById("root");
-var data = [];
+const data = {};
 
 fetchData();
 
@@ -11,7 +11,12 @@ function fetchData(callback){
             root.innerHTML = res.error;
             return;
         }else if(res.employees.length > 0){
-            data = res;
+            for (const key in data) {
+                delete key;
+            }
+
+            Object.assign(data, res);
+
             if(callback === undefined){
                 windowAllEmployees()
             }else{
@@ -40,9 +45,11 @@ function windowAllEmployees(){
     table.appendChild(cel(["tr",   ...keys.map(k => ["th", {innerText: k}]), ["th", {innerText: "action"}]]));
 
     for (let i = 0; i < data.employees.length; i++) {
-        table.appendChild(cel(["tr",   ...keys.map(k => ["td", {innerText: data.employees[i][k]}]), ["td",["input", {type: "button", value: "edit", onclick: ()=>{
-            windowEditEmployee(data.employees[i]["id"])
-        }}]]]));
+        table.appendChild(cel([ "tr",   
+                                ...keys.map(k => ["td", {innerText: data.employees[i][k]}]), 
+                                ["td",["input", {type: "button", value: "edit", onclick: ()=>{
+                                    windowEditEmployee(data.employees[i]["id"])
+                                }}]]]));
     }
 
     root.appendChild(table);
@@ -199,10 +206,6 @@ function windowEditEmployee(id){
     root.appendChild(submitButton);
     root.appendChild(backButton.btn);
 
-    // root.appendChild(cel(["input", {type: "button", value: "refresh", onclick: () => fetchData(()=>{
-    //     windowEditEmployee(id);
-    //     root.appendChild(cel(["p",{innerText: `Refreshed ${new Date().toTimeString()}`}]));
-    // })}]));
 }
 
 function createBackButton(){

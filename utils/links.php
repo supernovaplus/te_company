@@ -3,11 +3,9 @@ echo '<div id="links">';
 foreach ([
 
         "index.php",
-        "employees.php",
-        "turnin.php",
-        "data.php",
+        "index.php?turnin",
         "login_panel.php",
-        "test.php"
+        "data.php",
 
     ] as $key => $value) {
         echo "<a href='".$value."'>".$value."</a>";
