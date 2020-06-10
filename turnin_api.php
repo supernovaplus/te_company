@@ -19,7 +19,7 @@ if ($conn -> connect_errno) {
 }
 
 if(!isset($body)){
-    $response->error = "body not found";
+    $response->error = "Body missing";
     $conn->close();
     die(json_encode($response));
 }

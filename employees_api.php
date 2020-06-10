@@ -10,70 +10,111 @@ $response = (object) array(
     "response" => null,
 );
 
+if(!isset($body)){
+    $response->error = "Body missing";
+    $conn->close();
+    die(json_encode($response));
+}
 
-// if(!$entityBody){
-//     $response->error = "Body missing";
-//     $conn->close();
-//     die(json_encode($response));
-// }
+function trybind_update($data, &$params_array, &$query, &$types){
+    for ($i=0; $i < count($data); $i++) { 
+        if(isset($data[$i][0])){
+            array_push($params_array, $data[$i][0]);
+            
+            if(count($params_array) > 1){ $query .= ", "; }
+            
+            $query .= $data[$i][1]."=?";
+            $types .= $data[$i][2];
+        }
+    }
+}
+
+function trybind_insert($data){
+    $arr = [];
+    $values = "";
+    $types = "";
+    $query = "";
+    for ($i=0; $i < count($data); $i++) { 
+        if(isset($data[$i][0])){
+            array_push($arr, $data[$i][0]);
+            if(count($arr) > 1){ $values .= ", "; $query .= ", "; }
+            $values .= "?";
+            $query .= $data[$i][1];
+            $types .= $data[$i][2];
+        }
+    }
+    return array('arr' => $arr, 'values' => $values, 'types' => $types, 'query' => $query);
+}
 
 
 switch($_SERVER['REQUEST_METHOD']){
     case("UPDATE"):
         if(!$body || !$body->id){
-            $response->error = "Body or ID missing";break;
+            $response->error = "Body or ID missing"; break;
         }
-        if($stmt = $conn->prepare("UPDATE employees SET name=?, ingameid=?, join_date=?, leave_date=?, note=?, auto_rank=?, custom_rank=?, discordid=? WHERE id=?")){
-            $stmt->bind_param("sisssiiii", $name, $ingameid, $join_date, $leave_date, $note, $auto_rank, $custom_rank, $discordid, $id);
-            
-            
-            $name = $body->name;
-            $ingameid = $body->ingameid;
-            $join_date = $body->join_date;
-            $leave_date = $body->leave_date;
-            $note = $body->note;
-            $auto_rank = $body->auto_rank;
-            $custom_rank = $body->custom_rank;
-            $discordid = $body->discordid;
-            $id = $body->id;
 
+        $query = "UPDATE employees SET ";
+        $types = "";
+        $params = [];
+
+        trybind_update([
+            [$body->name, "name", "s"],
+            [$body->ingameid, "ingameid", "i"],
+            [$body->join_date, "join_date", "s"],
+            [$body->leave_date, "leave_date", "s"],
+            [$body->note, "note", "s"],
+            [$body->auto_rank, "auto_rank", "i"],
+            [$body->custom_rank, "custom_rank", "i"],
+            [$body->discordid, "discordid", "i"]
+        ], $params, $query, $types);
+
+        $query .= " WHERE id=?";
+        $types .= "i";
+        array_push($params, $body->id);
+
+        if($stmt = $conn->prepare($query)){
+            $stmt->bind_param($types, ...$params);
+    
             if($stmt->execute()){
                 $response->response = "Data updated";
                 $response->status = 201;
             }else{
                 $response->error = "Error while updating values #1";
-                $response->error = $stmt->error;
-
             }
-
         }else{
             $response->error = "Error while updating values #2";
         }
         break;
+
     case("PUT"):
-        if($user["permission_name"] == "ceo" || $user["permission_name"] == "hr"){
+        if(!$user["permission_name"] == "ceo" && !$user["permission_name"] == "hr"){ $response->error = "Missing permissions"; break;}
 
-            if($stmt = $conn->prepare("INSERT INTO employees (name, ingameid, join_dat, note, auto_rank, custom_rank, discordid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")){
-                    $stmt->bind_param("sissiii", $name, $ingameid, $join_date, $note, $auto_rank, $custom_rank, $discordid);
-                    
-                    $name = $body->name;
-                    $ingameid = $body->ingameid;
-                    $join_date = $body->join_date;
-                    $note = $body->note;
-                    $auto_rank = $body->auto_rank;
-                    $custom_rank = $body->custom_rank;
-                    $discordid = $body->discordid;
+        if(!isset($body->join_date) || !isset($body->ingameid) ){
+            $response->error = "Invalid body";
+            break; 
+        }
 
-                    if($stmt->execute()){
-                        $response->response = "Data saved";
-                        $response->status = 201;
-                    }else{
-                        $response->error = "Error while inserting values #1";
-                    }
+        $insert = trybind_insert([
+            [$body->name, "name", "s"],
+            [$body->ingameid, "ingameid", "i"],
+            [$body->join_date, "join_date", "s"],
+            [$body->auto_rank, "auto_rank", "i"],
+            [$body->custom_rank, "custom_rank", "i"],
+            [$body->discordid, "discordid", "i"],
+        ]);
 
-            }else{
-                $response->error = "Error while inserting values #2";
-            }
+        if($stmt = $conn->prepare("INSERT INTO employees (".$insert["query"].") VALUES (".$insert["values"].")")){
+                $stmt->bind_param($insert["types"], ...$insert["arr"]);
+
+                if($stmt->execute()){
+                    $response->response = "Data saved";
+                    $response->status = 201;
+                }else{
+                    $response->error = "Error while inserting values #1";
+                }
+
+        }else{
+            $response->error = "Error while inserting values #2";
         }
 
         break;
@@ -81,7 +122,6 @@ switch($_SERVER['REQUEST_METHOD']){
     default:
         break;
 }
-
 
 $conn->close();
 echo json_encode($response);

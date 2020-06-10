@@ -132,7 +132,7 @@ function windowEditEmployee(id){
                 ["table", ...keys.map(k => 
                     ["tr",
                         ["th", {innerText: k}], 
-                        ["td", ...type_edit_emp(k, found)]] 
+                        ["td", ...type_edit_emp(k, found) || "?"]] 
                     )]]));
     
     const input = [...document.querySelectorAll("input:not([type=button]):not([type=checkbox]),select")]
@@ -254,6 +254,7 @@ function type_add_new(key){
 };
 
 function type_edit_emp(key, found){
+    console.log("key",key,found)
     if(!data.user.permissions[key]){
         return found[key];
     }else{
