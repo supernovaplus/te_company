@@ -69,6 +69,7 @@ function windowAddNewEmployee(){
 
     const input = [...document.querySelectorAll("input:not([type=button]),select")];
 
+    const backButton = createBackButton();
     const submitButton = cel(["input", {type: "button", value: "submit"}]);
     submitButton.onclick = () => {
         const errors = [];
@@ -104,6 +105,7 @@ function windowAddNewEmployee(){
                     submitButton.value = res.response;
                     responseBox.innerText = "";
                     submitButton.disabled = true;
+                    backButton.gotData();
                 }else{
                     if(res.error){
                         responseBox.innerText = _err(res.error);
@@ -117,8 +119,7 @@ function windowAddNewEmployee(){
         });
     };
     root.appendChild(submitButton);
-
-    backButton();
+    root.appendChild(backButton.btn);
 }
 
 function windowEditEmployee(id){
@@ -137,6 +138,7 @@ function windowEditEmployee(id){
     
     const input = [...document.querySelectorAll("input:not([type=button]):not([type=checkbox]),select")]
 
+    const backButton = createBackButton();
     const responseBox = document.createElement("p");
     const submitButton = cel(["input", {type: "button", value: "submit"}]);
     submitButton.onclick = () => {
@@ -179,6 +181,8 @@ function windowEditEmployee(id){
                     submitButton.value = res.response;
                     responseBox.innerText = "";
                     submitButton.disabled = true;
+                    
+                    Object.assign(found, body);
                 }else{
                     if(res.error){
                         responseBox.innerText = _err(res.error);
@@ -193,17 +197,20 @@ function windowEditEmployee(id){
     };
     root.appendChild(responseBox);
     root.appendChild(submitButton);
-    
-    backButton();
+    root.appendChild(backButton.btn);
 
-    root.appendChild(cel(["input", {type: "button", value: "refresh", onclick: () => fetchData(()=>{
-        windowEditEmployee(id);
-        root.appendChild(cel(["p",{innerText: `Refreshed ${new Date().toTimeString()}`}]));
-    })}]));
+    // root.appendChild(cel(["input", {type: "button", value: "refresh", onclick: () => fetchData(()=>{
+    //     windowEditEmployee(id);
+    //     root.appendChild(cel(["p",{innerText: `Refreshed ${new Date().toTimeString()}`}]));
+    // })}]));
 }
 
-function backButton(){
-    root.appendChild(cel(["input",{type: "button", value: "back", onclick: windowAllEmployees}]));
+function createBackButton(){
+    const btn = cel(["input",{type: "button", value: "back", onclick: windowAllEmployees}])
+    return {btn, gotData: () => {
+        btn.value = "back (refresh)";
+        btn.onclick = (()=>fetchData(()=>windowAllEmployees()));
+    }}
 }
 
 function _err(string){
@@ -254,7 +261,6 @@ function type_add_new(key){
 };
 
 function type_edit_emp(key, found){
-    console.log("key",key,found)
     if(!data.user.permissions[key]){
         return found[key];
     }else{
@@ -290,7 +296,7 @@ function type_edit_emp(key, found){
             case("join_date"):
                 return [prefix, ["input", {type: "text", name: key, value: new Date().toLocaleString('lt', { timeZone: 'GMT' }), required: true, disabled: true}]];
             case("note"):
-                return [prefix, ["input", {type: "text", name: key, value:"", disabled: true}]];
+                return [prefix, ["input", {type: "text", name: key, value: found[key], disabled: true}]];
             default:
                 return [prefix, ["input",{type: "text", name: key, value: found[key], disabled: true, required: true}]];
         };
