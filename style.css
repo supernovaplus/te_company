@@ -4,104 +4,65 @@
     font-family:'Roboto Slab',serif
 }
 
-body {
-    color:#000
+body{
+    margin: auto;
+    /* width: 1000px; */
 }
 
-a {
-    padding:5px
+p{
+    margin: 0;
+    padding: 0;
 }
 
-hr {
-    margin:5px;
-    border-color:#adff2f
+table{
+    /* table-layout:fixed; */
+    /* white-space: pre; */
+    /* overflow:hidden; */
+    border-collapse: separate;
+    text-align: center;
+    width: 100%;
+}
+
+tr{
+    margin: 0;
+    padding: 0;
+}
+
+td, th, table{
+    border: 1px solid rgb(221, 221, 221);
+}
+tr{
+    border: 1px solid black;
+}
+
+th{
+    background: rgb(219, 219, 219);
+    border-radius: 5px 0; 
+    border: 1px solid black;
+    padding: 5px;
+    
+}
+
+tr:hover > td{
+    background-color: rgb(221, 221, 221);
+    border: 1px solid black;
 }
 
 #links {
-    width:50%;
-    text-align:center
+    margin: auto;
 }
 
-#links a {
-    text-decoration:none;
-    color:blue
+#links a{
+    padding: 5px;
 }
 
-#content,#links,#turnin {
-    margin:0 auto
+td,tr,th{
+    box-sizing: border-box;
+
 }
 
-#turnin {
-    border:1px solid #000;
-    border-radius:5px;
-    padding:10px;
-    box-shadow:#000 1px 1px 1px;
-    min-width:300px;
-    max-width:500px
-}
-
-#content {
-    border:1px solid #000;
-    border-radius:5px;
-    padding:10px;
-    box-shadow:#000 1px 1px 1px;
-    width:50%
-}
-
-#infobox {
-    min-height:300px
-}
-
-table {
-    width:100%;
-    text-align:center
-}
-
-#employees table th {
-    min-width:30px
-}
-
-#final table th {
-    background-color:#4b4b4b
-}
-
-#final table tr {
-    border-bottom:1px solid grey!important
-}
-
-.emp th,.emp td {
-    border:1px solid #000
-}
-
-tr {
-    border:1px solid #a0a0a0;
-    border-radius:5px
-}
-
-#infobox td,#infobox th {
-    background-color:rgba(158,147,147,0.356);
-    border-radius:5px;
-    border-radius:5px;
-    text-align:center
-}
-
-.box {
-    width:100%;
-    background-color:grey;
-    margin-top:5px;
-    border-radius:2px;
-    color:#fff;
-    box-shadow:#000 1px 1px;
-    text-shadow:#000 1px 1px 1px,#000 -1px -1px 1px,#000 -1px 1px 1px,#000 1px -1px 1px;
-    align-content:center;
-    text-align:center
-}
-
-.upper {
-    text-transform:uppercase
-}
-
-p {
-    margin:5px;
-    padding:5px
+input, select{
+    text-align: center;
+    /* width: 100%; */
+    box-sizing: border-box;
 }

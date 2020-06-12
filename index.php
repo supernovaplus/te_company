@@ -8,7 +8,6 @@ require_once("./utils/links.php");
 echo '<div id="root"></div>
 <script src="utils/misc-min.js"></script>';
 
-
 if(isset($_GET["turnin"])){
     echo '<script src="turnin.js"></script>';
 }else if(isset($_GET["pays"])){

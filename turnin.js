@@ -3,11 +3,12 @@ const data = {};
 let infobox, vouchersinputbox, finalbox;
 const inputList = [];
 
-fetch("data.php?r=1-2-3")
+fetch("api_v1_get.php?q=1,2,3")
 .then(res=>res.json())
 .then(res=>{
     if(res.error !== null){
-        root.innerHTML = res.error; return;
+        root.innerHTML = res.error; 
+        return;
     }else if(res.employees.length > 0){
         Object.assign(data, res);
         
@@ -194,8 +195,8 @@ function handleCalculateButton(found, calculateButton){
                 calculateButton.disabled = true;
 
                 console.log(body);
-                fetch("turnin_api.php",{
-                    method: 'POST',
+                fetch("api_v1_put.php?q=add_vouchers",{
+                    method: 'PUT',
                     credentials: 'include',
                     body: JSON.stringify(body)
                 }).then(res=>res.json()).then(res=>{
@@ -205,9 +206,9 @@ function handleCalculateButton(found, calculateButton){
                         }else{
                             
                             if(res.error){
-                                responsebox.innerText += res.error;
+                                responsebox.innerText = res.error;
                             }else{
-                                responsebox.innerText = "Error while sending to the database #2";
+                                responsebox.innerText = "Error while sending to the database #2\n";
                             }
 
                             setTimeout(() => {

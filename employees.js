@@ -4,7 +4,7 @@ const data = {};
 fetchData();
 
 function fetchData(callback){
-    fetch("api_v1.php?data=1-2-3")
+    fetch("api_v1_get.php?q=1,2,3")
     .then(res=>res.json())
     .then(res=>{
         if(res.error !== null){
@@ -103,7 +103,7 @@ function windowAddNewEmployee(){
         }
         
         console.log(body);
-        fetch("employees_api.php",{
+        fetch("api_v1_put.php?q=add_employee",{
             method: 'PUT',
             credentials: 'include',
             body: JSON.stringify(body)
@@ -179,7 +179,7 @@ function windowEditEmployee(id){
         body.id = id;
 
         console.log(body);
-        fetch("employees_api.php",{
+        fetch("api_v1_update.php?q=edit_employee",{
             method: 'UPDATE',
             credentials: 'include',
             body: JSON.stringify(body)
