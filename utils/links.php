@@ -4,6 +4,7 @@ foreach ([
 
         "index.php",
         "index.php?turnin",
+        "index.php?pays",
         "login_panel.php",
         "data.php",
 

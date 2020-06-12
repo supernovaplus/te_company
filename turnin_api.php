@@ -20,6 +20,7 @@ if ($conn -> connect_errno) {
     die(json_encode($response));
 }
 
+
 if(!isset($body)){
     $response->error = "Body missing";
     $conn->close();

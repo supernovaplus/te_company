@@ -3,7 +3,7 @@ const data = {};
 let infobox, vouchersinputbox, finalbox;
 const inputList = [];
 
-fetch("data.php")
+fetch("data.php?r=1-2-3")
 .then(res=>res.json())
 .then(res=>{
     if(res.error !== null){

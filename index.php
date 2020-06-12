@@ -4,10 +4,18 @@ $title = "employees";
 require_once("./utils/header.php");
 require_once("./utils/links.php");
 
+
 echo '<div id="root"></div>
 <script src="utils/misc-min.js"></script>';
 
-echo isset($_GET["turnin"]) ? '<script src="turnin.js"></script>' : '<script src="employees.js"></script>';
+
+if(isset($_GET["turnin"])){
+    echo '<script src="turnin.js"></script>';
+}else if(isset($_GET["pays"])){
+    echo '<script src="pays.js"></script>';
+}else{
+    echo '<script src="employees.js"></script>';
+};
 
 // if(window.location.search){
 //     if(window.location.search === "?turnin"){

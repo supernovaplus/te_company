@@ -4,7 +4,7 @@ const data = {};
 fetchData();
 
 function fetchData(callback){
-    fetch("data.php")
+    fetch("api_v1.php?data=1-2-3")
     .then(res=>res.json())
     .then(res=>{
         if(res.error !== null){
