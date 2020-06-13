@@ -31,6 +31,7 @@ tr{
 td, th, table{
     border: 1px solid rgb(221, 221, 221);
 }
+
 tr{
     border: 1px solid black;
 }
@@ -48,17 +49,38 @@ tr:hover > td{
     border: 1px solid black;
 }
 
-#links {
+#links, #root {
     margin: auto;
+    align-content: center;
 }
 
 #links a{
     padding: 5px;
 }
 
+.paytable{
+    width: 100%;
+    border-collapse: collapse; 
+}
+
+.pay:hover *{
+    /* background-color: transparent; */
+    background-color: rgb(189, 189, 189);
+}
+
+.pay tr{
+    border: none;
+}
+
+
+
+.spacer{
+    min-height: 50px;
+    display: block;
+}
+
 td,tr,th{
     box-sizing: border-box;
-
 }
 
 input, select{

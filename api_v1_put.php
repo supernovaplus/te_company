@@ -19,7 +19,7 @@ function tryinsert($list){
     $errors = "";
 
     for ($i=0; $i < count($list); $i++) { 
-        if(isset($list[$i][0]) && $list[$i][0]){
+        if(isset($list[$i][0])){
             array_push($arr, $list[$i][0]);
             if(count($arr) > 1){
                 $values .= ", ";
@@ -106,7 +106,7 @@ if($_SERVER['REQUEST_METHOD'] != "PUT" ||  !$q){
                     [&$body[$i]->amount,                 "amount",               "i"],
                     [&$body[$i]->vouchers_id,            "vouchers_id",          "i"],
                     [&$body[$i]->accepted_by_id,         "accepted_by_id",       "i"],
-                    [&$body[$i]->vouchers_holding_id,    "vouchers_holding_id",  "i"],
+                    [&$body[$i]->ceo_covered,            "ceo_covered",          "i"],
                     [&$body[$i]->rank_id,                "rank_id",              "i"],
                     [&$body[$i]->employee_cut,           "employee_cut",         "i"],
                     [&$body[$i]->total_calculated_sum,   "total_calculated_sum", "i"]

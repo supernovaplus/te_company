@@ -17,26 +17,24 @@ if($_SERVER['REQUEST_METHOD'] != "GET" ||  !$q){
     $fetch_array = [];
     for ($i=0; $i < count($args_array); $i++) {
         switch($args_array[$i]){
-            case(1): array_push($fetch_array,   [&$response->employees,   "CALL showTable();"]);                  break;
-            case(2): array_push($fetch_array,   [&$response->ranks,       "select * from ranks_config;"]);        break;
-            case(3): array_push($fetch_array,   [&$response->vouchers,    "select * from vouchers_config;"]);     break;
-            case(4): array_push($fetch_array,   [&$response->pays,        "select * from pays;"]);                break;
-            case(10): array_push($fetch_array,  [&$response->pays,        "SELECT *, sum(amount) as s FROM pays where ceo_covered = 0 group by manag_id;"]); break;
+            case("employees"):  array_push($fetch_array, [&$response->employees,   "CALL showTable();"]);                  break;
+            case("ranks"):      array_push($fetch_array, [&$response->ranks,       "select * from ranks_config;"]);        break;
+            case("vouchers"):   array_push($fetch_array, [&$response->vouchers,    "select * from vouchers_config;"]);     break;
+            case("pays"):       array_push($fetch_array, [&$response->pays,        "select * from pays;"]);                break;
+            // case(10):           array_push($fetch_array, [&$response->pays,        "SELECT *, sum(amount) as s FROM pays where ceo_covered = 0 group by manag_id,type;"]); break;
+            case("vauc"):           array_push($fetch_array, [&$response->vauc,      "SELECT amount, total_calculated_sum * (employee_cut * 0.1) as sum, accepted_by_id, name FROM `transactions` left join vouchers_config on vouchers_config.id = transactions.vouchers_id group by accepted_by_id, vouchers_id;"]); break;
+            case("pay_t"):           array_push($fetch_array, [&$response->pays_t,      "select sum, manag_id from (SELECT manag_id, sum((case when type = \"give\" THEN -amount ELSE amount END)) as sum FROM pays where ceo_covered = 0 group by manag_id) as pa left join employees on employees.id = pa.manag_id;"]); break;
         }
     }
 
     if(count($fetch_array) == 0){
         $response->error = "Invalid args";
-        
     }else{
         $query = "";
-
         for ($i=0; $i < count($fetch_array); $i++) { 
             $query .= $fetch_array[$i][1];
         }
-
         if (mysqli_multi_query($conn, $query)) {
-
             $column = 0;
             do {
                 $fetch_array[$column][0] = [];
@@ -47,7 +45,6 @@ if($_SERVER['REQUEST_METHOD'] != "GET" ||  !$q){
                     mysqli_free_result($result);
                     $column++;
                 }
-    
                 $response->status = 200;
             } while (mysqli_next_result($conn));
 

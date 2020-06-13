@@ -41,22 +41,16 @@ if(isset($_COOKIE["key"])){
 
 }
 
-echo "<div id=\"content\">";
+echo "<div id=\"root\">";
 
 $url = htmlentities($_SERVER['PHP_SELF'])."?url=$referer";
 
-
 if(isset($user)){
     echo "<p>Logged In as ".$user["name"]." (".$user["permission_name"].")</p>";
-
     echo "<form method=\"post\" action=\"$url\"><input type=\"submit\" name=\"logout\" value=\"Log Out\">";
-
-    
-    // print_r($_SERVER);
     if($referer != ""){
         echo "<input type=\"button\" onclick=\"window.location = '$referer';\" value=\"Go back to $referer\">";
     }
-
     echo "</form>";
 }else{
     echo "<form method=\"post\" action=\"$url\">
@@ -67,9 +61,7 @@ if(isset($user)){
     </form>";
 }
 
-
-echo "</div>";
-
-echo "<script>0</script>";
+echo "</div>
+<script>0</script>";
 
 require_once("./utils/footer.php");

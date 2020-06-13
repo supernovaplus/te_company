@@ -3,35 +3,14 @@ const data = {};
 let infobox, vouchersinputbox, finalbox;
 const inputList = [];
 
-fetch("api_v1_get.php?q=1,2,3")
+fetch("api_v1_get.php?q=employees,ranks,vouchers")
 .then(res=>res.json())
 .then(res=>{
     if(res.error !== null){
         root.innerHTML = res.error; 
-        return;
-    }else if(res.employees.length > 0){
+    }else if(res.employees && res.employees.length > 0){
         Object.assign(data, res);
-        
-        data.filtered_auto_ranks = Object.values(data.ranks.filter(r=>r["auto_vouchers"] === "1"))
-            .map(r=>({
-                ...r, 
-                vouchers_required: parseInt(r.vouchers_required),
-                employee_cut: parseInt(r.employee_cut),
-            })).sort((a,b) => a.vouchers_required - b.vouchers_required);
-
-        infobox = cel(["div"]);
-        vouchersinputbox = cel(["div"]);
-        finalbox = cel(["div"]);
-    
-        root.appendChild(cel(["div",["select",{onchange: (e)=>selectemployee(e.target.value)}, 
-            ["option", {value: "-1", innerText: "Select employee"}],
-            ...data.employees.map(em => ["option",{value: em.id, innerText: `NAME: ${em.name}#${em.ingameid} | EID: ${em.id} | VOUCHERS: ${em.vouchers} | RANK: ${em.rank}`}])
-        ]]));
-
-        root.appendChild(infobox);
-        root.appendChild(vouchersinputbox);
-        root.appendChild(finalbox);
-
+        loaded();
     }else{
         root.innerHTML = "error 2";
     };
@@ -39,6 +18,28 @@ fetch("api_v1_get.php?q=1,2,3")
     root.innerHTML = "error 1";
     console.log(err);
 });
+
+function loaded(){
+    data.filtered_auto_ranks = Object.values(data.ranks.filter(r=>r["auto_vouchers"] === "1"))
+    .map(r=>({
+        ...r, 
+        vouchers_required: parseInt(r.vouchers_required),
+        employee_cut: parseInt(r.employee_cut),
+    })).sort((a,b) => a.vouchers_required - b.vouchers_required);
+
+    infobox = cel(["div"]);
+    vouchersinputbox = cel(["div"]);
+    finalbox = cel(["div"]);
+
+    root.appendChild(cel(["div",["select",{onchange: (e)=>selectemployee(e.target.value)}, 
+        ["option", {value: "-1", innerText: "Select employee"}],
+        ...data.employees.map(em => ["option",{value: em.id, innerText: `NAME: ${em.name}#${em.ingameid} | EID: ${em.id} | VOUCHERS: ${em.vouchers} | RANK: ${em.rank}`}])
+    ]]));
+
+    root.appendChild(infobox);
+    root.appendChild(vouchersinputbox);
+    root.appendChild(finalbox);
+}
 
 function selectemployee(id){
     if(id == "-1") return;
@@ -109,7 +110,6 @@ function handleCalculateButton(found, calculateButton){
                 { id:"-1", name: "N/A" } : 
                 getNextRank(current_total_vouchers);
 
-            //if more than needed
             if(newNextRank.id !== "-1" && 
                 (current_total_vouchers + filtered[0].leftovers) - newNextRank.vouchers_needed > newNextRank.vouchers_needed){
 
@@ -124,7 +124,7 @@ function handleCalculateButton(found, calculateButton){
                     
                     employee_cut: currentRank["employee_cut"],
                     accepted_by_id: data.user.eid,
-                    vouchers_holding_id: data.user.eid,
+                    ceo_covered: 0,
 
                     misc: {
                         voucher_name: filtered[0].voucher.name,
@@ -136,7 +136,6 @@ function handleCalculateButton(found, calculateButton){
                 current_total_vouchers += newNextRank.vouchers_needed;
                 filtered[0].leftovers -= newNextRank.vouchers_needed;
 
-            //if less than needed
             }else{
 
                 const total_calculated_sum = filtered[0].leftovers * parseInt(filtered[0].voucher.price);
@@ -149,7 +148,7 @@ function handleCalculateButton(found, calculateButton){
                     
                     employee_cut: currentRank["employee_cut"],
                     accepted_by_id: data.user.eid,
-                    vouchers_holding_id: data.user.eid,
+                    ceo_covered: 0,
 
                     misc: {
                         voucher_name: filtered[0].voucher.name,

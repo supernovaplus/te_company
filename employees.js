@@ -4,17 +4,13 @@ const data = {};
 fetchData();
 
 function fetchData(callback){
-    fetch("api_v1_get.php?q=1,2,3")
+    fetch("api_v1_get.php?q=employees,ranks,vouchers")
     .then(res=>res.json())
     .then(res=>{
         if(res.error !== null){
             root.innerHTML = res.error;
-            return;
-        }else if(res.employees.length > 0){
-            for (const key in data) {
-                delete key;
-            }
-
+        }else if(res.employees && res.employees.length > 0){
+            for (const key in data) { delete key; }
             Object.assign(data, res);
 
             if(callback === undefined){
