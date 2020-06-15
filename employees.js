@@ -65,7 +65,9 @@ function windowAddNewEmployee(){
                     )]]));
 
     const responseBox = document.createElement("p");
-    root.appendChild(responseBox);
+    const dd = document.createElement("div");
+    dd.appendChild(responseBox);
+    root.appendChild(dd);
 
     const input = [...document.querySelectorAll("input:not([type=button]),select")];
 
@@ -182,7 +184,7 @@ function windowEditEmployee(id){
                     responseBox.innerText = "";
                     submitButton.disabled = true;
                     
-                    Object.assign(found, body); // <- wtf is this
+                    Object.assign(found, body);
                 }else{
                     if(res.error){
                         responseBox.innerText = _err(res.error);

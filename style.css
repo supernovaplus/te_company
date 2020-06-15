@@ -1,16 +1,18 @@
 @import "https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400&display=swap";
 
 * {
-    font-family:'Roboto Slab',serif
+    margin: 0;
+    padding: 0;
 }
 
 body{
-    margin: auto;
+    font-family: 'Roboto Slab', serif;
 }
 
 #header{
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 #header a{
@@ -32,36 +34,31 @@ body{
     flex-direction: column;
 }
 
-/* #root div,#root table{
-    display: inline-block;
-} */
-
 table{
     border-collapse: collapse;
     text-align: center;
 }
 
-table tr{
+tr{
     border-bottom: 1px solid black;
 }
-table td{
+
+/* td, th{
+    padding: 5px;
+} */
+
+th, .employees td{
     padding: 5px;
 }
 
-table tr:hover > td{
+tr:hover > td{
     background-color: rgba(128, 128, 128, 0.315);
 }
 
-table th{
+th{
     background-color: rgb(0, 66, 66);
     color: white;
-    padding: 5px;
 }
-
-p{
-    margin: 5px;
-}
-
 
 input[type=button]{
     background-color: teal;
@@ -72,14 +69,57 @@ input[type=button]{
     min-width: 100px;
 }
 
-input[type=button]:hover{
+input[type=button]:not(:disabled):hover{
     background-color: rgb(0, 207, 207);
 }
 
-.turnin div, .turnin table{
-    min-width: 300px;
+.turnin table{
+    width: 500px;
+}
+
+select,input{
+    padding: 5px;
+}
+
+input{
+    margin: 3px;
+}
+
+input[type="button"]:disabled {
+	color: grey;
+}
+
+hr{
+    display: block;
+    width: 100%;
+}
+
+.turnin{
+    text-align: center;
+}
+
+.turnin p {
+    background-color: black;
+    color: white;
+    margin: 10px 0;
+}
+
+.employees table, .employees > input{
+    min-width: 500px;
+}
+
+.turnin div{
+    min-width: 500px;
     display: flex;
+    flex-wrap: wrap;
     flex-direction: column;
-    justify-content: center;
-    align-content: center;
+}
+
+.turnin > select, 
+.turnin > div:not(:empty), 
+.turnin > table, 
+.employees > table {
+    margin: 2px;
+    padding: 2px;
+    border: 2px solid black;
 }

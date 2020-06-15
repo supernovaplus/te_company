@@ -5,7 +5,7 @@ require_once("./utils/header.php");
 require_once("./utils/links.php");
 
 
-echo '<div id="root"></div>
+echo '<div id="root">Loading</div>
 <script src="utils/misc-min.js"></script>';
 
 if(isset($_GET["turnin"])){

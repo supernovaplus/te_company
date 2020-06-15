@@ -9,7 +9,6 @@ fetch("api_v1_get.php?q=employees,vauc,pay_t")
     }else if(res.employees && res.employees.length > 0){
         for (const key in data) { delete key; }
         Object.assign(data, res);
-
         loaded();
     }else{
         root.innerHTML = "Database Error #1";
@@ -21,13 +20,12 @@ fetch("api_v1_get.php?q=employees,vauc,pay_t")
 
 
 function loaded(){
+    root.innerHTML = "";
     const staff_data = {};
 
-    root.appendChild(document.createElement("hr"))
     data.vauc.forEach(el=>root.appendChild(cel(["p",{innerText: JSON.stringify(el)}])));
     root.appendChild(document.createElement("hr"))
     data.pays_t.forEach(el=>root.appendChild(cel(["p",{innerText: JSON.stringify(el)}])));
-    root.appendChild(document.createElement("hr"))
     root.appendChild(document.createElement("hr"))
 
     data.vauc.forEach(v=>{
@@ -57,15 +55,29 @@ function loaded(){
         const paybox = cel(["div",{className: "paybox"}]);
         
 
-        paybox.appendChild(cel(["p",{innerText: "EMPLOYEE => " + staff_key, className: "phead"}]))
+        paybox.appendChild(cel(["p",{innerText: "EMPLOYEE => " + staff_key, className: "phead", style:"color: red;background-color:grey;"}]))
 
         let lastType;
         staff_data[staff_key].forEach(data => {
+            const kkeys = {
+                vouchers: {},
+                pays: {}
+            };
+
+            if(data.newtype === "vouchers"){
+
+            }else if(data.newtype === "pays"){
+
+            }
+
+
             if(!lastType || lastType !== data.newtype){
                 paybox.appendChild(cel(["hr"]));
                 paybox.appendChild(cel(["p",{innerText: data.newtype}]));
                 lastType = data.newtype;
             }
+
+            
 
             const lele = Object.entries(data).map(k => `${k[0]} => ${k[1]}`);
             console.log(lele);

@@ -21,6 +21,7 @@ fetch("api_v1_get.php?q=employees,ranks,vouchers")
 });
 
 function loaded(){
+    root.innerHTML = "";
     data.filtered_auto_ranks = Object.values(data.ranks.filter(r=>r["auto_vouchers"] === "1"))
     .map(r=>({
         ...r, 
@@ -32,10 +33,10 @@ function loaded(){
     vouchersinputbox = cel(["div"]);
     finalbox = cel(["div"]);
 
-    root.appendChild(cel(["div",["select",{onchange: (e)=>selectemployee(e.target.value)}, 
+    root.appendChild(cel(["select",{onchange: (e)=>selectemployee(e.target.value)}, 
         ["option", {value: "-1", innerText: "Select employee"}],
         ...data.employees.map(em => ["option",{value: em.id, innerText: `NAME: ${em.name}#${em.ingameid} | EID: ${em.id} | VOUCHERS: ${em.vouchers} | RANK: ${em.rank}`}])
-    ]]));
+    ]));
 
     root.appendChild(infobox);
     root.appendChild(vouchersinputbox);
@@ -54,7 +55,10 @@ function selectemployee(id){
     if(!found) return;
 
     const keys = ["name", "ingameid", "auto_rank", "vouchers", "rank"];
-    infobox.appendChild(cel(["tr", ...keys.map(k=>["tr",["th",{innerText: k}], ["td", {innerHTML: found[k]}]])]));
+
+    keys.forEach(k=>{
+        infobox.appendChild(cel(["tr", ["th",{innerText: k}] , ["td", {innerHTML: found[k]}] ]));
+    })
 
     for (let i = 0; i < data.vouchers.length; i++) {
         const v = data.vouchers[i];
@@ -69,7 +73,7 @@ function selectemployee(id){
         inputList.push({input, voucher: v})
     }
 
-    const calculateButton = cel(["input", {type: "button", value: "calculate", onclick: () => {
+    const calculateButton = cel(["input", {type: "button", value: "Calculate", onclick: () => {
         handleCalculateButton(found, calculateButton);
     }}])
 
@@ -165,8 +169,6 @@ function handleCalculateButton(found, calculateButton){
             loop();
 
         }else{
-
-        
             const table = cel(["table",["tr",["th",{innerText: "#"}],["th",{innerText: "Amount"}],["th",{innerText: "Type"}],["th",{innerText: "Rank"}],["th",{innerText: "Employee Cut"}]]]);
             finalbox.appendChild(table);
 
@@ -182,13 +184,13 @@ function handleCalculateButton(found, calculateButton){
                 delete body[i].misc;
             }
 
-            finalbox.appendChild(cel(["p", {innerText: `Vouchers after turnin => ${current_total_vouchers}`}]));
+            const startBoxString = `Vouchers after turnin => ${current_total_vouchers}`;
+
+            const boxx = cel(["p", {innerText: startBoxString}])
+            finalbox.appendChild(boxx);
 
             const acceptButton = cel(["input", {type: "button", value: "Send data to the database"}]);
             finalbox.appendChild(acceptButton);
-
-            const responsebox = cel(["p"]);
-            finalbox.appendChild(responsebox);
 
             acceptButton.onclick = () => {
                 acceptButton.disabled = true;
@@ -201,21 +203,14 @@ function handleCalculateButton(found, calculateButton){
                     body: JSON.stringify(body)
                 }).then(res=>res.json()).then(res=>{
                         if(res.status && res.status === 201){
-                            responsebox.innerText = res.response;
+                            boxx.innerText = startBoxString + "\n" + res.response;
                             finalbox.appendChild(cel(["input", {type: "button", value: "Refresh Page", onclick: () => window.location = window.location}]));
                         }else{
-                            
-                            if(res.error){
-                                responsebox.innerText = res.error;
-                            }else{
-                                responsebox.innerText = "Error while sending to the database #2\n";
-                            }
-
+                            boxx.innerText = startBoxString + "\n" + res.error ? res.error : "Error while sending to the database #2\n";
                             setTimeout(() => {
                                 acceptButton.disabled = false;
                                 calculateButton.disabled = false;
                             }, 1000);
-                            
                         }
                 }).catch(err=>{
                     console.error(err);
