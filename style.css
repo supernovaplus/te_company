@@ -47,20 +47,24 @@ tr{
     padding: 5px;
 } */
 
-th, .employees td{
+th, .employees td, .hd{
     padding: 5px;
+}
+
+.paybox:hover{
+    box-shadow: black 1px 1px 5px;
 }
 
 tr:hover > td{
     background-color: rgba(128, 128, 128, 0.315);
 }
 
-th{
+th,.hd{
     background-color: rgb(0, 66, 66);
     color: white;
 }
 
-input[type=button]{
+input[type=button], input[type=submit]{
     background-color: teal;
     color: white;
     border: 0;
@@ -69,8 +73,10 @@ input[type=button]{
     min-width: 100px;
 }
 
-input[type=button]:not(:disabled):hover{
+input[type=button]:not(:disabled):hover, #header a:hover{
     background-color: rgb(0, 207, 207);
+    box-shadow: black 1px 1px 5px;
+    cursor: pointer;
 }
 
 .turnin table{
@@ -108,18 +114,37 @@ hr{
     min-width: 500px;
 }
 
-.turnin div{
+#root > div{
     min-width: 500px;
+    text-align: center;
+}
+
+.turnin div{
     display: flex;
     flex-wrap: wrap;
     flex-direction: column;
 }
 
 .turnin > select, 
-.turnin > div:not(:empty), 
+#root > div:not(:empty):not(.skip), 
 .turnin > table, 
 .employees > table {
     margin: 2px;
     padding: 2px;
     border: 2px solid black;
+}
+
+/* .pays {
+    flex-wrap: wrap;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+} */
+
+.paybox {
+    margin: 5px;
+    background-color: lightgray;
+}
+
+.paybox p {
+    padding: 2px;
 }

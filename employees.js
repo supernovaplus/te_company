@@ -35,7 +35,7 @@ function windowAllEmployees(){
     const keys = Object.keys(data.employees[0]).filter(k => !filter.includes(k) );
     
     if(data.user.permission_name === "ceo" || data.user.permission_name === "hr"){
-        root.appendChild(cel(["div",["input",{type:"button", value: "add new employee", onclick: windowAddNewEmployee}]]));
+        root.appendChild(cel(["div",{className: "skip"},["input",{type:"button", value: "add new employee", onclick: windowAddNewEmployee}]]));
     }
 
     table.appendChild(cel(["tr",   ...keys.map(k => ["th", {innerText: k}]), ["th", {innerText: "action"}]]));

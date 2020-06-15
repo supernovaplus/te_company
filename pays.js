@@ -1,4 +1,5 @@
 const root = document.getElementById("root");
+root.className = "pays"
 const data = {};
 
 fetch("api_v1_get.php?q=employees,vauc,pay_t")
@@ -23,72 +24,58 @@ function loaded(){
     root.innerHTML = "";
     const staff_data = {};
 
-    data.vauc.forEach(el=>root.appendChild(cel(["p",{innerText: JSON.stringify(el)}])));
-    root.appendChild(document.createElement("hr"))
-    data.pays_t.forEach(el=>root.appendChild(cel(["p",{innerText: JSON.stringify(el)}])));
-    root.appendChild(document.createElement("hr"))
-
     data.vauc.forEach(v=>{
-        if(staff_data[v.accepted_by_id] === undefined) staff_data[v.accepted_by_id] = [];
-        v.newtype = "vouchers";
-        staff_data[v.accepted_by_id].push(v);
+        if(staff_data[v.accepted_by_id] === undefined) {
+            staff_data[v.accepted_by_id] = {"vouchers": {}, "pays": 0};
+        }
+
+        if(staff_data[v.accepted_by_id]["vouchers"][v.name] === undefined){
+            staff_data[v.accepted_by_id]["vouchers"][v.name] = {
+                name: v.name,
+                sum: +v.sum,
+                amount: +v.amount
+            }
+        }else{
+            staff_data[v.accepted_by_id]["vouchers"][v.name]["sum"] += +v.sum;
+            staff_data[v.accepted_by_id]["vouchers"][v.name]["amount"] += +v.amount;
+        }
     });
 
     data.pays_t.forEach(v=>{
-        if(staff_data[v.manag_id] === undefined) staff_data[v.manag_id] = [];
-        v.newtype = "pays";
-        staff_data[v.manag_id].push(v);
+        if(staff_data[v.manag_id] === undefined) staff_data[v.manag_id] = {"vouchers": {}, "pays": 0};
+        staff_data[v.manag_id]["pays"] += +v.sum;
     });
 
-    const staff_keys = Object.keys(staff_data).sort((a,b) => a - b);
     console.log(staff_data);
+
+    const staff_keys = Object.keys(staff_data).sort((a,b) => a - b);
     if(staff_keys.length === 0){
         root.innerHTML = "All payments solved";
         return;
     }
 
-    const div = cel(["div", {className: "pays"}]);
-
-    
-    staff_keys.forEach(staff_key => {
-
+    staff_keys.forEach(key => {
+        const found = data.employees.find(em=>em.id == key);
         const paybox = cel(["div",{className: "paybox"}]);
-        
+        paybox.appendChild(cel(["p",{innerText: `${found ? found.name : "?"} [ID: ${key}]`, className: "hd"}]))
 
-        paybox.appendChild(cel(["p",{innerText: "EMPLOYEE => " + staff_key, className: "phead", style:"color: red;background-color:grey;"}]))
+        if(staff_data[key]["pays"] !== 0){
+            paybox.appendChild(cel(["p",{innerText: `Pays: ${staff_data[key]["pays"].toLocaleString('us')}$`}]))
+        }
 
-        let lastType;
-        staff_data[staff_key].forEach(data => {
-            const kkeys = {
-                vouchers: {},
-                pays: {}
-            };
+        if(Object.keys(staff_data[key]["vouchers"]).length > 0){
+            paybox.appendChild(cel(["p",{innerText: `Vouchers:\n` + 
+            Object.values(staff_data[key]["vouchers"]).map(obj => `${obj.name} | ${obj.amount.toLocaleString('us')}v | ${obj.sum.toLocaleString('us')}$\n`).join("")
+        }]))
+            // Object.values(staff_data[key]["vouchers"]).forEach(obj=>{
+            //     paybox.appendChild(cel(["p",{innerText: `${obj.name} => ${obj.amount} => ${obj.sum}$`}]))
+            // })
+        }
 
-            if(data.newtype === "vouchers"){
-
-            }else if(data.newtype === "pays"){
-
-            }
-
-
-            if(!lastType || lastType !== data.newtype){
-                paybox.appendChild(cel(["hr"]));
-                paybox.appendChild(cel(["p",{innerText: data.newtype}]));
-                lastType = data.newtype;
-            }
-
-            
-
-            const lele = Object.entries(data).map(k => `${k[0]} => ${k[1]}`);
-            console.log(lele);
-            paybox.appendChild(cel("p",{innerText: lele.join("\n")}));
-        })
-
-
-        div.appendChild(paybox);
+        root.appendChild(paybox);
     })
 
-    root.appendChild(div);
+    // root.appendChild(root);
 
 
 }

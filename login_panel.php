@@ -46,17 +46,19 @@ echo "<div id=\"root\">";
 $url = htmlentities($_SERVER['PHP_SELF'])."?url=$referer";
 
 if(isset($user)){
-    echo "<p>Logged In as ".$user["name"]." (".$user["permission_name"].")</p>";
+    echo "<div><p>Logged In as ".$user["name"]." (".$user["permission_name"].")</p></div>";
     echo "<form method=\"post\" action=\"$url\"><input type=\"submit\" name=\"logout\" value=\"Log Out\">";
     if($referer != ""){
         echo "<input type=\"button\" onclick=\"window.location = '$referer';\" value=\"Go back to $referer\">";
     }
     echo "</form>";
 }else{
-    echo "<form method=\"post\" action=\"$url\">
+    echo "
+    <div>
         <p>$err</p>
-        <label for=\"key\">Login Key: </label>
-        <input type=\"text\" name=\"key\" placeholder=\"key\" required minlength=\"4\"><br>
+    </div>
+    <form method=\"post\" action=\"$url\">
+        <label for=\"key\">Enter Login Key: </p><input type=\"text\" name=\"key\" placeholder=\"key\" required minlength=\"4\">
         <input type=\"submit\" name=\"login\" value=\"Log In\"><br>
     </form>";
 }
