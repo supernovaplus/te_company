@@ -49,29 +49,34 @@ function loaded(){
         return;
     }
 
-    const table = cel(["table",{className: "paytable"}]);
+    const div = cel(["div", {className: "pays"}]);
+
     
     staff_keys.forEach(staff_key => {
-        const tbody = cel(["tbody",{className: "pay"},["tr",
-            ["th",{innerText: "EMPLOYEE => " + staff_key, colspan: 3}], 
-            ["th",["input", {type: "button", value: "submit"}]]]]);
+
+        const paybox = cel(["div",{className: "paybox"}]);
+        
+
+        paybox.appendChild(cel(["p",{innerText: "EMPLOYEE => " + staff_key, className: "phead"}]))
 
         let lastType;
         staff_data[staff_key].forEach(data => {
             if(!lastType || lastType !== data.newtype){
-                tbody.appendChild(cel("tr",...Object.keys(data).map(k => ["th", {innerText: k}])));
+                paybox.appendChild(cel(["hr"]));
+                paybox.appendChild(cel(["p",{innerText: data.newtype}]));
                 lastType = data.newtype;
             }
 
-            tbody.appendChild(cel("tr",...Object.values(data).map(k => ["td", {innerText: k}])));
+            const lele = Object.entries(data).map(k => `${k[0]} => ${k[1]}`);
+            console.log(lele);
+            paybox.appendChild(cel("p",{innerText: lele.join("\n")}));
         })
 
 
-        table.appendChild(tbody);
-        table.appendChild(cel(["tbody",{className: "spacer"}]));
+        div.appendChild(paybox);
     })
 
-    root.appendChild(table);
+    root.appendChild(div);
 
 
 }

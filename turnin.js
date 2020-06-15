@@ -1,4 +1,5 @@
-const root = document.getElementById("root");
+const root = document.getElementById("root")
+root.className = "turnin";
 const data = {};
 let infobox, vouchersinputbox, finalbox;
 const inputList = [];
@@ -27,7 +28,7 @@ function loaded(){
         employee_cut: parseInt(r.employee_cut),
     })).sort((a,b) => a.vouchers_required - b.vouchers_required);
 
-    infobox = cel(["div"]);
+    infobox = cel(["table"]);
     vouchersinputbox = cel(["div"]);
     finalbox = cel(["div"]);
 

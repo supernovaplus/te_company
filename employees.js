@@ -1,4 +1,5 @@
-const root = document.getElementById("root");
+const root = document.getElementById("root")
+root.className = "employees";
 const data = {};
 
 fetchData();
@@ -27,7 +28,6 @@ function fetchData(callback){
     });
 }
 
-
 function windowAllEmployees(){
     root.innerHTML = "";
     const table = document.createElement("table");
@@ -35,7 +35,7 @@ function windowAllEmployees(){
     const keys = Object.keys(data.employees[0]).filter(k => !filter.includes(k) );
     
     if(data.user.permission_name === "ceo" || data.user.permission_name === "hr"){
-        root.appendChild(cel(["input",{type:"button", value: "add new employee", onclick: windowAddNewEmployee}]));
+        root.appendChild(cel(["div",["input",{type:"button", value: "add new employee", onclick: windowAddNewEmployee}]]));
     }
 
     table.appendChild(cel(["tr",   ...keys.map(k => ["th", {innerText: k}]), ["th", {innerText: "action"}]]));
@@ -50,9 +50,6 @@ function windowAllEmployees(){
 
     root.appendChild(table);
 }
-
-
-
 
 function windowAddNewEmployee(){
     root.innerHTML = "";
@@ -185,7 +182,7 @@ function windowEditEmployee(id){
                     responseBox.innerText = "";
                     submitButton.disabled = true;
                     
-                    Object.assign(found, body);
+                    Object.assign(found, body); // <- wtf is this
                 }else{
                     if(res.error){
                         responseBox.innerText = _err(res.error);
