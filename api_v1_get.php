@@ -8,6 +8,8 @@ $response = (object) array(
 );
 
 $q = isset($_GET["q"]) ? $_GET["q"] : null;
+// $getid = isset($_GET["id"]) ? intval($_GET["id"]) : null;
+$page = isset($_GET["page"]) ? intval($_GET["page"]) : 1;
 
 if($_SERVER['REQUEST_METHOD'] != "GET" ||  !$q){
     $response->error = "Invalid request";
@@ -24,6 +26,11 @@ if($_SERVER['REQUEST_METHOD'] != "GET" ||  !$q){
             // case(10):           array_push($fetch_array, [&$response->pays,              "SELECT *, sum(amount) as s FROM pays where ceo_covered = 0 group by manag_id,type;"]); break;
             case("vauc"):           array_push($fetch_array,    [&$response->vauc,          "SELECT sum(amount) as amount, sum(total_calculated_sum * (employee_cut * 0.1)) as sum, accepted_by_id, name FROM `transactions`  left join vouchers_config on vouchers_config.id = transactions.vouchers_id where ceo_covered = 0 group by accepted_by_id, vouchers_id;"]);                                                                                                                                   break;
             case("pay_t"):           array_push($fetch_array,   [&$response->pays_t,        "select sum, manag_id from (SELECT manag_id, sum((case when type = \"give\" THEN -amount ELSE amount END)) as sum FROM pays where ceo_covered = 0 group by manag_id) as pa left join employees on employees.id = pa.manag_id;"]); break;
+
+            case("pays_log"): 
+                array_push($fetch_array,   [&$response->pays_log,        "select * from pays order by id asc limit ". ($page - 1) * 20 .", 20;"]);
+                array_push($fetch_array,   [&$response->pages,        "select count(*) as count from pays;"]);
+                break;
         }
     }
 
@@ -35,15 +42,15 @@ if($_SERVER['REQUEST_METHOD'] != "GET" ||  !$q){
             $query .= $fetch_array[$i][1];
         }
         if (mysqli_multi_query($conn, $query)) {
-            $column = 0;
+            $pointer = 0;
             do {
-                $fetch_array[$column][0] = [];
+                $fetch_array[$pointer][0] = [];
                 if ($result = mysqli_store_result($conn)) {
                     while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-                        array_push($fetch_array[$column][0], $row);
+                        array_push($fetch_array[$pointer][0], $row);
                     }
                     mysqli_free_result($result);
-                    $column++;
+                    $pointer++;
                 }
                 $response->status = 200;
             } while (mysqli_next_result($conn));

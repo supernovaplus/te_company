@@ -30,7 +30,7 @@ function fetchData(callback){
 
 function windowAllEmployees(){
     root.innerHTML = "";
-    const table = document.createElement("table");
+    const table = cel(["table"]);
     const filter = ["leave_date", "custom_rank"];
     const keys = Object.keys(data.employees[0]).filter(k => !filter.includes(k) );
     
@@ -64,8 +64,8 @@ function windowAddNewEmployee(){
                         ["td", type_add_new(k)]] 
                     )]]));
 
-    const responseBox = document.createElement("p");
-    const dd = document.createElement("div");
+    const responseBox = cel(["p"]);
+    const dd = cel(["div"]);
     dd.appendChild(responseBox);
     root.appendChild(dd);
 
@@ -141,7 +141,7 @@ function windowEditEmployee(id){
     const input = [...document.querySelectorAll("input:not([type=button]):not([type=checkbox]),select")]
 
     const backButton = createBackButton();
-    const responseBox = document.createElement("p");
+    const responseBox = cel(["p"]);
     const submitButton = cel(["input", {type: "button", value: "submit"}]);
     submitButton.onclick = () => {
         const errors = [];

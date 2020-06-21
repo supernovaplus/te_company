@@ -47,7 +47,7 @@ tr{
     padding: 5px;
 } */
 
-th, .employees td, .hd{
+th, .employees td, .pays_log td, .hd{
     padding: 5px;
 }
 
@@ -128,7 +128,7 @@ hr{
 .turnin > select, 
 #root > div:not(:empty):not(.skip), 
 .turnin > table, 
-.employees > table {
+.employees > table , .pays_log > table{
     margin: 2px;
     padding: 2px;
     border: 2px solid black;
