@@ -6,15 +6,20 @@ require_once("./utils/links.php");
 
 
 echo '<div id="root">Loading</div>
-<script src="utils/misc-min.js"></script>';
+<script src="utils/misc-min.js"></script>
+<script>const _root=document.getElementById("root");setTimeout(()=>{if(_root.innerText==="Loading"){_root.innerText="Error";};},4000);</script>';
 
-if(isset($_GET["turnin"])){
-    echo '<script src="turnin.js"></script>';
-}else if(isset($_GET["pays"])){
-    echo '<script src="pays.js"></script>';
-}else{
+if(count($_GET) == 0){
     echo '<script src="employees.js"></script>';
-};
+}else if(isset($_GET["turnin"])){
+    echo '<script src="turnin.js"></script>';
+}else if(isset($_GET["pays_log"])){
+    echo '<script src="pays_log.js"></script>';
+}else if(isset($_GET["pays_manage"])){
+    echo '<script src="pays_manage.js"></script>';
+}else{
+    echo '<script>_root.innerText="Invalid Request";</script>';
+}
 
 // if(window.location.search){
 //     if(window.location.search === "?turnin"){

@@ -67,15 +67,9 @@ function loaded(){
             paybox.appendChild(cel(["p",{innerText: `Vouchers:\n` + 
             Object.values(staff_data[key]["vouchers"]).map(obj => `${obj.name} | ${obj.amount.toLocaleString('us')}v | ${obj.sum.toLocaleString('us')}$\n`).join("")
         }]))
-            // Object.values(staff_data[key]["vouchers"]).forEach(obj=>{
-            //     paybox.appendChild(cel(["p",{innerText: `${obj.name} => ${obj.amount} => ${obj.sum}$`}]))
-            // })
+
         }
 
         root.appendChild(paybox);
     })
-
-    // root.appendChild(root);
-
-
 }

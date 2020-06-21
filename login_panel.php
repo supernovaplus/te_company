@@ -4,6 +4,8 @@ require_once("./utils/links.php");
 
 $user; $err;
 $referer = isset($_GET['url']) ? $_GET['url'] : "";
+$url = htmlentities($_SERVER['PHP_SELF'])."?url=$referer";
+
 require_once("./utils/config.php");
 
 if(isset($_POST["logout"])){
@@ -43,8 +45,6 @@ if(isset($_COOKIE["key"])){
 
 echo "<div id=\"root\">";
 
-$url = htmlentities($_SERVER['PHP_SELF'])."?url=$referer";
-
 if(isset($user)){
     echo "<div><p>Logged In as ".$user["name"]." (".$user["permission_name"].")</p></div>";
     echo "<form method=\"post\" action=\"$url\"><input type=\"submit\" name=\"logout\" value=\"Log Out\">";
@@ -53,9 +53,8 @@ if(isset($user)){
     }
     echo "</form>";
 }else{
-    echo "
-    <div>
-        <p>$err</p>
+    echo "<div>
+    <p>$err</p>
     </div>
     <form method=\"post\" action=\"$url\">
         <label for=\"key\">Enter Login Key: </p><input type=\"text\" name=\"key\" placeholder=\"key\" required minlength=\"4\">
